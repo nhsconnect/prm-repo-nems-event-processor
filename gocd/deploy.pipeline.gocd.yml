@@ -41,6 +41,9 @@ pipelines:
     materials:
       git:
         type: configrepo
+      app:
+        pipeline: prm-deductions-nems-event-processor
+        stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_dev
@@ -54,6 +57,9 @@ pipelines:
     materials:
       git:
         type: configrepo
+      app:
+        pipeline: prm-deductions-nems-event-processor
+        stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_test
@@ -70,6 +76,9 @@ pipelines:
     materials:
       git:
         type: configrepo
+      app:
+        pipeline: prm-deductions-nems-event-processor
+        stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_pre_prod
