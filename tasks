@@ -166,16 +166,16 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
-    gradle test integrationTest jacocoTestCoverageVerification check
-    ;;
+      gradle test integrationTest jacocoTestCoverageVerification check
+      ;;
   test_all)
-    configure_local_envs
-    dojo -c Dojofile-itest "./tasks _test_all"
-    ;;
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _test_all"
+      ;;
   run_local)
-    configure_local_envs
-    ./gradlew bootRun
-    ;;
+      configure_local_envs
+      ./gradlew bootRun
+      ;;
   _dep)
       gradle dependencyCheckAnalyze
       ;;
