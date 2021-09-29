@@ -7,6 +7,10 @@ import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 public class HealthMetricPublisher {
@@ -30,7 +34,7 @@ public class HealthMetricPublisher {
                 .builder()
                 .metricName("Health")
                 .value(1.0)
-                .timestamp(Instant.now())
+                .timestamp(awsCompatibleNow())
                 .dimensions(dimensions)
                 .build();
 
@@ -42,5 +46,10 @@ public class HealthMetricPublisher {
                         .build();
 
         cloudWatchClient.putMetricData(request);
+    }
+
+    // why? here's why: https://forums.aws.amazon.com/thread.jspa?threadID=328321
+    private Instant awsCompatibleNow() {
+        return Instant.parse(ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS).format(DateTimeFormatter.ISO_INSTANT));
     }
 }
