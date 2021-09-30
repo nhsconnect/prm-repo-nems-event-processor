@@ -16,7 +16,7 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class MetricsClientTest {
+class HealthMetricPublicationTest {
 
     CloudWatchClient cloudWatchClient = CloudWatchClient.create();
 
