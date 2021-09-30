@@ -7,8 +7,6 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -16,8 +14,6 @@ import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class MetricsClientTest {
@@ -25,7 +21,7 @@ class MetricsClientTest {
     CloudWatchClient cloudWatchClient = CloudWatchClient.create();
 
     @Test
-    void shouldPutHealthMetricDataIntoCloudWatch() {
+    void shouldPutHealthMetricDataIntoCloudWatch() throws InterruptedException {
         HealthMetricPublisher publisher = new HealthMetricPublisher(cloudWatchClient);
 
         publisher.publishHealthyStatus();
@@ -33,7 +29,15 @@ class MetricsClientTest {
         List<Metric> metrics = fetchMetricsMatching("PrmDeductions/NemsEventProcessor", "Health");
         assertThat(metrics).isNotEmpty();
 
-        MetricDataResult metricData = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
+        int count = 0;
+        MetricDataResult metricData;
+        do {
+            Thread.sleep(5000);
+            metricData = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
+            if (count++ > 10) {
+                break;
+            }
+        } while (metricData.values().isEmpty());
 
         System.out.println(metricData.values());
         System.out.println(metricData.timestamps());
