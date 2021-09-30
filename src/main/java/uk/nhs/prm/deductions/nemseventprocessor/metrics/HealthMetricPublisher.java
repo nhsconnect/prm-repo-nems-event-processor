@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class HealthMetricPublisher {
 
     private static final int SECONDS = 1000;
-    private static final int MINUTE_INTERVAL = 10 * SECONDS;
+    private static final int MINUTE_INTERVAL = 60 * SECONDS;
     private CloudWatchClient cloudWatchClient;
 
     @Autowired
