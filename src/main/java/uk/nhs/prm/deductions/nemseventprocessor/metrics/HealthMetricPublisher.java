@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 
 public class HealthMetricPublisher {
 
+    private static final int SECONDS = 1000;
+    private static final int MINUTE_INTERVAL = 60 * SECONDS;
     private CloudWatchClient cloudWatchClient;
 
     @Autowired
@@ -22,6 +25,7 @@ public class HealthMetricPublisher {
         this.cloudWatchClient = cloudWatchClient;
     }
 
+    @Scheduled(fixedRate = MINUTE_INTERVAL)
     public void publishHealthyStatus() {
         ArrayList<Dimension> dimensions = new ArrayList<>();
         dimensions.add(Dimension
