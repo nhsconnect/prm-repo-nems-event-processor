@@ -2,13 +2,13 @@ package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
+import uk.nhs.prm.deductions.nemseventprocessor.AppConfig;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -23,11 +23,13 @@ public class HealthMetricPublisher {
 
     private static final int SECONDS = 1000;
     private static final int MINUTE_INTERVAL = 60 * SECONDS;
+    private final AppConfig config;
     private CloudWatchClient cloudWatchClient;
 
     @Autowired
-    public HealthMetricPublisher(CloudWatchClient cloudWatchClient) {
+    public HealthMetricPublisher(CloudWatchClient cloudWatchClient, AppConfig config) {
         this.cloudWatchClient = cloudWatchClient;
+        this.config = config;
     }
 
     @Scheduled(fixedRate = MINUTE_INTERVAL)
@@ -37,7 +39,7 @@ public class HealthMetricPublisher {
         dimensions.add(Dimension
                 .builder()
                 .name("Environment")
-                .value("ci")
+                .value(config.environment())
                 .build());
 
         MetricDatum datum = MetricDatum
