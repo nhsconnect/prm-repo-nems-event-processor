@@ -67,10 +67,12 @@ function tf_init {
 function tf_plan {
   operation=$1
 
-  if [[ -z "${GO_DEPENDENCY_LABEL_APP}" ]]; then
-    set_image_tag
-  else
-    IMAGE_TAG=${GO_DEPENDENCY_LABEL_APP}
+  if [[ -z "${IMAGE_TAG}" ]]; then
+    if [[ -z "${GO_DEPENDENCY_LABEL_APP}" ]]; then
+      set_image_tag
+    else
+      IMAGE_TAG=${GO_DEPENDENCY_LABEL_APP}
+    fi
   fi
 
   tf_init
@@ -182,9 +184,14 @@ case "${command}" in
   dep)
       dojo "./tasks _dep"
       ;;
+  _tf)
+      _assume_environment_role $NHS_ENVIRONMENT
+      tf_init
+      bash
+      ;;
   tf)
       check_env
-      dojo -c Dojofile-infra "bash"
+      dojo -c Dojofile-infra "./tasks _tf"
       ;;
   _tf_plan)
       _assume_environment_role $NHS_ENVIRONMENT
