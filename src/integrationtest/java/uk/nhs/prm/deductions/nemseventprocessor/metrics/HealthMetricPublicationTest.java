@@ -67,7 +67,6 @@ class HealthMetricPublicationTest {
 
     private Metric getMetricWhere(List<Metric> metrics, Predicate<Metric> metricPredicate) {
         List<Metric> filteredMetrics = metrics.stream().filter(metricPredicate).collect(toList());
-        assertThat(filteredMetrics.size()).isEqualTo(1);
         return filteredMetrics.get(0);
     }
     private List<Metric> fetchMetricsMatching(String namespace, String metricName) {
