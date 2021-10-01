@@ -3,8 +3,8 @@ package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -26,10 +25,11 @@ class HealthMetricPublicationTest {
 
     CloudWatchClient cloudWatchClient = CloudWatchClient.create();
 
+    @Autowired
+    AppConfig config;
+
     @Test
     void shouldPutHealthMetricDataIntoCloudWatch() throws InterruptedException {
-        AppConfig config = Mockito.mock(AppConfig.class);
-        when(config.environment()).thenReturn("ci");
 
         HealthMetricPublisher publisher = new HealthMetricPublisher(cloudWatchClient, config);
 
