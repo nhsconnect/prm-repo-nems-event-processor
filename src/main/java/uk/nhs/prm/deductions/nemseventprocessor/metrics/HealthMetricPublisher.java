@@ -34,7 +34,6 @@ public class HealthMetricPublisher {
 
     @Scheduled(fixedRate = MINUTE_INTERVAL)
     public void publishHealthyStatus() {
-        log.info("SCHEDULED");
         ArrayList<Dimension> dimensions = new ArrayList<>();
         dimensions.add(Dimension
                 .builder()
@@ -45,7 +44,7 @@ public class HealthMetricPublisher {
         MetricDatum datum = MetricDatum
                 .builder()
                 .metricName("Health")
-                .value(1.0)
+                .value(config.metricHealthValue())
                 .timestamp(awsCompatibleNow())
                 .dimensions(dimensions)
                 .build();

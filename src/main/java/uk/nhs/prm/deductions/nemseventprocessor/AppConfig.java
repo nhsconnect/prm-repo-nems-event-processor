@@ -12,8 +12,16 @@ public class AppConfig {
     @SuppressWarnings("unused")
     private String environment;
 
+    @Value("${metric.health.value}")
+    @SuppressWarnings("unused")
+    private Double metricHealthValue;
+
     public String environment() {
         return environment;
+    }
+
+    public Double metricHealthValue() {
+        return metricHealthValue;
     }
 
     @Bean

@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class NemsEventProcessorApplication {
 
     public static void main(String[] args) {
-        log.info("IN MAIN");
         SpringApplication.run(NemsEventProcessorApplication.class, args);
     }
 
