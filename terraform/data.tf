@@ -15,3 +15,11 @@ data "aws_ssm_parameter" "deductions_private_vpc_id" {
 data "aws_ssm_parameter" "deductions_private_db_subnets" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/deductions-private-database-subnets"
 }
+
+data "aws_ssm_parameter" "sns_sqs_kms_key_id" {
+  name = "/repo/${var.environment}/output/prm-deductions-mesh-forwarder/sns-sqs-kms-key-id"
+}
+
+data "aws_ssm_parameter" "nems_events_topic_arn" {
+  name = "/repo/${var.environment}/output/prm-deductions-mesh-forwarder/nems-events-topic-arn"
+}
