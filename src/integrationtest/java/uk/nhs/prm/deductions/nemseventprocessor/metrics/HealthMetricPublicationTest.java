@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
-import uk.nhs.prm.deductions.nemseventprocessor.AppConfig;
+import uk.nhs.prm.deductions.nemseventprocessor.config.AppConfig;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

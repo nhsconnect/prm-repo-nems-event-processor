@@ -43,7 +43,8 @@ function get_aws_account_id {
 
 function configure_local_envs {
   export LOG_LEVEL=debug
-  export NHS_ENVIRONMENT=local
+  export NHS_ENVIRONMENT=dev
+  export AWS_REGION=${AWS_DEFAULT_REGION}
 }
 
 #######################

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
-import uk.nhs.prm.deductions.nemseventprocessor.AppConfig;
+import uk.nhs.prm.deductions.nemseventprocessor.config.AppConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
