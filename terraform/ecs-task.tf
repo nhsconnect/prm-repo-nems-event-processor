@@ -6,7 +6,9 @@ locals {
   environment_variables = [
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "AWS_REGION", value = var.region },
-    { name = "LOG_LEVEL", value = var.log_level }
+    { name = "LOG_LEVEL", value = var.log_level },
+    { name = "UNHANDLED_EVENTS_SNS_TOPIC_ARN", value = aws_sns_topic.unhandled_events.arn },
+    { name = "NEMS_EVENTS_QUEUE_NAME", value = aws_sqs_queue.nems_events.name }
   ]
 }
 
