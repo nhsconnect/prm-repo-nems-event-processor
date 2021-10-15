@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.jms.JMSException;
@@ -14,6 +15,8 @@ public class NemsEventListener implements MessageListener {
 
     private final NemsEventService nemsEventService;
 
+
+    @SneakyThrows
     @Override
     public void onMessage(Message message) {
         log.info("RECEIVED: Nems Event Message");
@@ -22,8 +25,8 @@ public class NemsEventListener implements MessageListener {
             nemsEventService.processNemsEvent(payload);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Nems Event Message");
-        } catch (JMSException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Error while processing message: {}", e.getMessage());
         }
     }
 }
