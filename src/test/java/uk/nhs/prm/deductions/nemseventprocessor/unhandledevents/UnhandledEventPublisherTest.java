@@ -18,7 +18,7 @@ class UnhandledEventPublisherTest {
     @Mock
     private SnsClient snsClient;
 
-    private final String topicArn = "topicArn";
+    private final static String topicArn = "topicArn";
 
     private UnhandledEventPublisher unhandledEventPublisher;
 
