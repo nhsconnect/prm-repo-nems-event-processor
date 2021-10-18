@@ -45,7 +45,8 @@ function configure_local_envs {
   export LOG_LEVEL=debug
   export NHS_ENVIRONMENT=dev
   export AWS_REGION=${AWS_DEFAULT_REGION}
-  export UNHANDLED_EVENTS_SNS_TOPIC_ARN=whatever
+  export UNHANDLED_EVENTS_SNS_TOPIC_ARN=whatever_topic_arn
+  export NEMS_EVENTS_QUEUE_NAME=whatever_queue_name
 }
 
 #######################
