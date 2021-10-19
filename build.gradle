@@ -35,6 +35,7 @@ dependencies {
     implementation platform('software.amazon.awssdk:bom:2.15.0')
     implementation 'software.amazon.awssdk:cloudwatch:2.17.47'
     implementation 'software.amazon.awssdk:sns:2.17.58'
+    implementation 'software.amazon.awssdk:sqs:2.17.61'
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
