@@ -46,14 +46,12 @@ sourceSets {
     integrationTest {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
-        java.srcDirs('./src/integrationtest/java')
-        resources.srcDirs('./src/integrationtest/resources')
     }
 }
 
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 tasks.withType(Test) {

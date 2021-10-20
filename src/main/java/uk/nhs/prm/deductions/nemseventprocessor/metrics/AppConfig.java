@@ -1,4 +1,4 @@
-package uk.nhs.prm.deductions.nemseventprocessor.config;
+package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -7,14 +7,13 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 
 @Configuration
 public class AppConfig {
+    private final String environment;
+    private final Double metricHealthValue;
 
-    @Value("${environment}")
-    @SuppressWarnings("unused")
-    private String environment;
-
-    @Value("${metric.health.value}")
-    @SuppressWarnings("unused")
-    private Double metricHealthValue;
+    public AppConfig(@Value("${environment}")String environment, @Value("${metric.health.value}") Double metricHealthValue) {
+        this.environment = environment;
+        this.metricHealthValue = metricHealthValue;
+    }
 
     public String environment() {
         return environment;

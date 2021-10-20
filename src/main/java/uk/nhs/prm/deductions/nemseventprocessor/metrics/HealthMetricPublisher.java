@@ -8,7 +8,6 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
-import uk.nhs.prm.deductions.nemseventprocessor.config.AppConfig;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
