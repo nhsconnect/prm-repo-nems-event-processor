@@ -67,7 +67,7 @@ class HealthMetricPublicationTest {
     @NotNull
     private Predicate<Metric> metricHasDimension(String name, String value) {
         return metric -> metric.dimensions().stream().anyMatch(dimension ->
-                dimension.name().equals(name) && dimension.value().equals(value));
+            dimension.name().equals(name) && dimension.value().equals(value));
     }
 
     private <Metric> Predicate<Metric> all(Predicate<Metric>... predicates) {
@@ -80,10 +80,10 @@ class HealthMetricPublicationTest {
     }
     private List<Metric> fetchMetricsMatching(String namespace, String metricName) {
         ListMetricsRequest request = ListMetricsRequest.builder()
-                .namespace(namespace)
-                .metricName(metricName)
-                .recentlyActive(RecentlyActive.PT3_H)
-                .build();
+            .namespace(namespace)
+            .metricName(metricName)
+            .recentlyActive(RecentlyActive.PT3_H)
+            .build();
 
         ListMetricsResponse listMetricsResponse = cloudWatchClient.listMetrics(request);
         return listMetricsResponse.metrics();
@@ -91,19 +91,19 @@ class HealthMetricPublicationTest {
 
     private MetricDataResult fetchRecentMetricData(int minutesOfRecency, Metric metric) {
         MetricDataQuery dataQuery = MetricDataQuery.builder()
-                .id("health_test_query")
-                .metricStat(MetricStat.builder()
-                        .metric(metric)
-                        .period(1)
-                        .stat("Minimum")
-                        .build())
-                .returnData(true)
-                .build();
+            .id("health_test_query")
+            .metricStat(MetricStat.builder()
+                .metric(metric)
+                .period(1)
+                .stat("Minimum")
+                .build())
+            .returnData(true)
+            .build();
         GetMetricDataRequest request = GetMetricDataRequest.builder()
-                .startTime(Instant.now().minusSeconds(minutesOfRecency * 60).truncatedTo(ChronoUnit.MINUTES))
-                .endTime(Instant.now().truncatedTo(ChronoUnit.MINUTES))
-                .metricDataQueries(dataQuery)
-                .build();
+            .startTime(Instant.now().minusSeconds(minutesOfRecency * 60).truncatedTo(ChronoUnit.MINUTES))
+            .endTime(Instant.now().truncatedTo(ChronoUnit.MINUTES))
+            .metricDataQueries(dataQuery)
+            .build();
 
         List<MetricDataResult> metricDataResults = cloudWatchClient.getMetricData(request).metricDataResults();
         System.out.println("metric data results size: " + metricDataResults.size());
