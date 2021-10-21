@@ -22,10 +22,11 @@ public class NemsEventListener implements MessageListener {
         log.info("RECEIVED: Nems Event Message");
         try {
             String payload = ((TextMessage) message).getText();
+            log.info("payload os {} ", payload);
             nemsEventService.processNemsEvent(payload);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Nems Event Message");
-        } catch (Exception e) {
+        } catch (JMSException e) {
             log.error("Error while processing message: {}", e.getMessage());
         }
     }

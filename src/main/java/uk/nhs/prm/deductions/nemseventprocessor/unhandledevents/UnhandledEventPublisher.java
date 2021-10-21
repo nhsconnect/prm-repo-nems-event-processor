@@ -25,6 +25,7 @@ public class UnhandledEventPublisher {
             .topicArn(unhandledEventsSnsTopicArn)
             .build();
 
+        log.info("Send message: {}. to {}", message, unhandledEventsSnsTopicArn);
         PublishResponse result = snsClient.publish(request);
         log.info("PUBLISHED: message to unhandled events topic. Message id: {}", result.messageId());
     }

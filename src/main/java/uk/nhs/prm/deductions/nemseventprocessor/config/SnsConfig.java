@@ -12,7 +12,7 @@ public class SnsConfig {
     private String awsRegion;
 
     @Bean
-    public SnsClient configureClient() {
+    public SnsClient snsClient() {
         return SnsClient.builder().region(Region.of(awsRegion)).build();
     }
 }

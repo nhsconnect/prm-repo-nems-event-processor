@@ -41,10 +41,10 @@ class NemsEventListenerTest {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
-        // TODO: Simulate JMSException instead of RuntimeException
-        doThrow(new RuntimeException("error")).when(nemsEventService).processNemsEvent(any());
+        doThrow(new JMSException("error")).when(message).getText();
+
         nemsEventListener.onMessage(message);
-        // TODO: Add missing logging assertion
-        verify(nemsEventService).processNemsEvent(payload);
+        verifyNoInteractions(nemsEventService);
+        verifyNoMoreInteractions(message);
     }
 }
