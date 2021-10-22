@@ -1,5 +1,8 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
@@ -17,11 +20,9 @@ import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 
 import javax.annotation.PostConstruct;
+import java.net.URI;
 import java.util.List;
 
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventsIntegrationTest.localStack;
 
 @TestConfiguration
 public class AwsTestConfig {
@@ -40,25 +41,25 @@ public class AwsTestConfig {
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
         return AmazonSQSAsyncClientBuilder.standard()
-            .withCredentials(localStack.getDefaultCredentialsProvider())
-            .withEndpointConfiguration(localStack.getEndpointConfiguration(SQS))
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localstack:4566", "eu-west-2"))
             .build();
     }
 
     @Bean
     public SnsClient snsClient() {
         return SnsClient.builder()
-            .endpointOverride(localStack.getEndpointOverride(SNS))
+            .endpointOverride(URI.create("http://localstack:4566"))
             .region(Region.EU_WEST_2)
             .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
                 @Override
                 public String accessKeyId() {
-                    return localStack.getAccessKey();
+                    return "FAKE";
                 }
 
                 @Override
                 public String secretAccessKey() {
-                    return localStack.getSecretKey();
+                    return "FAKE";
                 }
             }))
             .build();
