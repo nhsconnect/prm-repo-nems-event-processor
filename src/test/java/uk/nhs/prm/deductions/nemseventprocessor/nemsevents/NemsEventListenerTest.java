@@ -4,10 +4,7 @@ import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +33,7 @@ class NemsEventListenerTest {
         verify(message).acknowledge();
     }
 
+    @CheckReturnValue
     @Test
     void shouldLogAnErrorIfMessageProcessingFails() throws JMSException {
         String payload = "payload";
