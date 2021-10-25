@@ -2,7 +2,6 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,15 +31,10 @@ class NemsEventsIntegrationTest {
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventQueueName;
 
-    @BeforeAll
-    static void beforeAll() {
-        System.setProperty("aws.region", "eu-west-2");
-    }
-
     @Test
     void shouldSendNemsEventMessageToUnhandledTopic() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        String messageBody = "I Have Arrived";
+        String messageBody = "Test message";
         amazonSQSAsync.sendMessage(queueUrl, messageBody);
 
         String receiving = amazonSQSAsync.getQueueUrl(UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE).getQueueUrl();

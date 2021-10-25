@@ -11,7 +11,6 @@ services:
     environment:
       - SERVICES=sqs,sns
       - DEFAULT_REGION=eu-west-2
-      - AWS_DEFAULT_REGION=eu-west-2
       - HOSTNAME_EXTERNAL=localstack
     volumes:
       - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
