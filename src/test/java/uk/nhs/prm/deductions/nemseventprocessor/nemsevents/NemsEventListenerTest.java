@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -31,7 +32,7 @@ class NemsEventListenerTest {
     }
 
     @Test
-    @CheckReturnValue
+    @SuppressFBWarnings
     void shouldLogAnErrorIfMessageProcessingFails() throws JMSException {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
