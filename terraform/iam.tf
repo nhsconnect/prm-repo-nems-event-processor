@@ -102,8 +102,10 @@ data "aws_iam_policy_document" "kms_policy_doc" {
 data "aws_iam_policy_document" "sqs_nems_events_ecs_task" {
   statement {
     actions = [
-      "sqs:ReceiveMessage",
-      "sqs:DeleteMessage"
+      "sqs:GetQueue*",
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:ReceiveMessage"
     ]
     resources = [
       aws_sqs_queue.nems_events.arn,
