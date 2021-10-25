@@ -25,7 +25,7 @@ import java.util.List;
 
 
 @TestConfiguration
-public class AwsTestConfig {
+public class LocalStackAwsConfig {
 
     public final static String UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE = "unhandled_test_receiver";
 

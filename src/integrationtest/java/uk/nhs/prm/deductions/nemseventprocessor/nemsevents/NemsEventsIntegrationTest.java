@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.AwsTestConfig.UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE;
+import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE;
 
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AwsTestConfig.class)
+@ContextConfiguration(classes = LocalStackAwsConfig.class)
 class NemsEventsIntegrationTest {
 
     @Autowired
