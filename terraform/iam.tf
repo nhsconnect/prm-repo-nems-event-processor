@@ -77,6 +77,40 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
   }
 }
 
+data "aws_iam_policy_document" "sns_policy_doc" {
+  statement {
+    actions = [
+      "sns:Publish"
+    ]
+    resources = [
+      aws_sns_topic.unhandled_events.arn,
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "kms_policy_doc" {
+  statement {
+    actions = [
+      "kms:*"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "sqs_nems_events_ecs_task" {
+  statement {
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage"
+    ]
+    resources = [
+      aws_sqs_queue.nems_events.arn,
+    ]
+  }
+}
+
 resource "aws_iam_policy" "ecr_policy" {
   name   = "${var.environment}-${var.component_name}-ecr"
   policy = data.aws_iam_policy_document.ecr_policy_doc.json
@@ -92,6 +126,21 @@ resource "aws_iam_policy" "cloudwatch_metrics_policy" {
   policy = data.aws_iam_policy_document.cloudwatch_metrics_policy_doc.json
 }
 
+resource "aws_iam_policy" "unhandled_events_sns" {
+  name   = "${var.environment}-${var.component_name}-sns"
+  policy = data.aws_iam_policy_document.sns_policy_doc.json
+}
+
+resource "aws_iam_policy" "nems_events_processor_kms" {
+  name   = "${var.environment}-${var.component_name}-kms"
+  policy = data.aws_iam_policy_document.kms_policy_doc.json
+}
+
+resource "aws_iam_policy" "nems_events_processor_sqs" {
+  name   = "${var.environment}-${var.component_name}-sqs"
+  policy = data.aws_iam_policy_document.sqs_nems_events_ecs_task.json
+}
+
 resource "aws_iam_role_policy_attachment" "ecr_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.ecr_policy.arn
@@ -105,4 +154,19 @@ resource "aws_iam_role_policy_attachment" "logs_policy_attach" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "unhandled_events_sns" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.unhandled_events_sns.arn
+}
+
+resource "aws_iam_role_policy_attachment" "nems_events_processor_kms" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.nems_events_processor_kms.arn
+}
+
+resource "aws_iam_role_policy_attachment" "nems_events_processor_sqs" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.nems_events_processor_sqs.arn
 }

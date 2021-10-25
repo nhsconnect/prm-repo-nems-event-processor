@@ -80,10 +80,10 @@ resource "aws_sns_topic_subscription" "unhandled_events_to_queue" {
 
 resource "aws_sqs_queue_policy" "unhandled_events_subscription" {
   queue_url = aws_sqs_queue.unhandled_events.id
-  policy    = data.aws_iam_policy_document.sqs_policy_doc.json
+  policy    = data.aws_iam_policy_document.unhandled_events_sns_topic_access_to_queue.json
 }
 
-data "aws_iam_policy_document" "sqs_policy_doc" {
+data "aws_iam_policy_document" "unhandled_events_sns_topic_access_to_queue" {
   statement {
 
     effect = "Allow"
