@@ -5,9 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,10 +35,15 @@ class UnhandledEventPublisherTest {
     @Test
     void shouldPublishMessageToSns() {
         String message = "someMessage";
+        Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
+        messageAttributes.put("traceId", MessageAttributeValue.builder()
+                .dataType("String")
+                .stringValue(MDC.get("traceId"))
+                .build());
 
         PublishRequest expectedRequest = PublishRequest.builder()
             .message(message)
-            .topicArn(topicArn)
+            .topicArn(topicArn).messageAttributes(messageAttributes)
             .build();
 
         String messageId = "someMessageId";
