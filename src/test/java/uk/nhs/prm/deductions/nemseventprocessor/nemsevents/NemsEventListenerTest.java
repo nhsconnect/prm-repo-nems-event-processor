@@ -76,12 +76,9 @@ class NemsEventListenerTest {
         testLogAppender.start();
         return testLogAppender;
     }
-
-
 }
 
 class TestLogAppender extends AppenderBase<ILoggingEvent> {
-
     ArrayList<ILoggingEvent> loggingEvents = new ArrayList<>();
 
     @Override
@@ -91,8 +88,6 @@ class TestLogAppender extends AppenderBase<ILoggingEvent> {
 
     ILoggingEvent getLastLoggedEvent() {
         if (loggingEvents.isEmpty()) return null;
-
         return loggingEvents.get(loggingEvents.size() - 1);
-
     }
 }
