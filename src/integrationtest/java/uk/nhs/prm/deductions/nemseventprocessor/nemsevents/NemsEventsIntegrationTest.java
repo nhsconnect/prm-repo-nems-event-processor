@@ -43,6 +43,7 @@ class NemsEventsIntegrationTest {
             List<Message> messages = amazonSQSAsync.receiveMessage(receiving).getMessages();
             assertThat(messages).hasSize(1);
             assertTrue(messages.get(0).getBody().contains(messageBody));
+            assertTrue(messages.get(0).getAttributes().containsKey("traceId"));
         });
     }
 
