@@ -26,6 +26,7 @@ public class SqsConfig {
     private String nemsEventsQueueName;
 
     private final NemsEventService nemsEventService;
+    private final Tracer tracer;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -44,7 +45,7 @@ public class SqsConfig {
         log.info("nems event queue name : {}", nemsEventsQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(nemsEventsQueueName));
 
-        consumer.setMessageListener(new NemsEventListener(nemsEventService));
+        consumer.setMessageListener(new NemsEventListener(nemsEventService, tracer));
 
         connection.start();
 

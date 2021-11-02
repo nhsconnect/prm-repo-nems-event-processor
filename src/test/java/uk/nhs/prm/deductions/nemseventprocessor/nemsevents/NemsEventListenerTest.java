@@ -12,11 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
+import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 
 import javax.jms.JMSException;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +26,8 @@ class NemsEventListenerTest {
 
     @Mock
     private NemsEventService nemsEventService;
+    @Mock
+    private Tracer tracer;
 
     @InjectMocks
     private NemsEventListener nemsEventListener;
@@ -54,15 +58,18 @@ class NemsEventListenerTest {
     @Test
     void shouldAddTraceIdToLoggingContextWhenReceivesMessage() throws JMSException {
         TestLogAppender testLogAppender = addTestLogAppender();
+        when(tracer.createTraceId()).thenReturn("test-trace-id");
+        doCallRealMethod().when(tracer).setTraceId("test-trace-id");
 
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         nemsEventListener.onMessage(message);
+
         ILoggingEvent lastLoggedEvent = testLogAppender.getLastLoggedEvent();
+        verify(tracer).setTraceId(tracer.createTraceId());
         assertNotNull(lastLoggedEvent);
         assertTrue(lastLoggedEvent.getMDCPropertyMap().containsKey("traceId"));
-        assertEquals(32, lastLoggedEvent.getMDCPropertyMap().get("traceId").length());
     }
 
     @NotNull
