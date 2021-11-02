@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class NemsEventParser {
     public NemsEventMessage parse(String messageBody) {
-        // stub for now
-        return NemsEventMessage.nonDeduction();
+        if (messageBody.contains("generalPractitioner")) {
+            return NemsEventMessage.nonDeduction();
+        }
+        return NemsEventMessage.deduction();
     }
 }
