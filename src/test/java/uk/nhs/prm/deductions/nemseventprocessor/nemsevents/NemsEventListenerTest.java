@@ -15,10 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.jms.JMSException;
 import java.util.ArrayList;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +62,7 @@ class NemsEventListenerTest {
         ILoggingEvent lastLoggedEvent = testLogAppender.getLastLoggedEvent();
         assertNotNull(lastLoggedEvent);
         assertTrue(lastLoggedEvent.getMDCPropertyMap().containsKey("traceId"));
-        assertNotNull(UUID.fromString(lastLoggedEvent.getMDCPropertyMap().get("traceId")));
+        assertEquals(32, lastLoggedEvent.getMDCPropertyMap().get("traceId").length());
     }
 
     @NotNull

@@ -18,7 +18,10 @@ public class NemsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        MDC.put("traceId", UUID.randomUUID().toString());
+        String traceIdUUID = UUID.randomUUID().toString();
+        String traceIdHex = traceIdUUID.replaceAll("-", "");
+        MDC.put("traceId", traceIdHex);
+
         log.info("RECEIVED: Nems Event Message");
         try {
             String payload = ((TextMessage) message).getText();
