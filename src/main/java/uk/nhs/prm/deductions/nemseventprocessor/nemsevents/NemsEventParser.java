@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class NemsEventParser {
     public NemsEventMessage parse(String messageBody) {
-        if (messageBody.contains("generalPractitioner")) {
+        XML messageXml = new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
+
+        if (! messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty()) {
             return NemsEventMessage.nonDeduction();
         }
 
