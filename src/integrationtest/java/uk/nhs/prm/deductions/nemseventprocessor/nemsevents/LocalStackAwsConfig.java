@@ -82,6 +82,7 @@ public class LocalStackAwsConfig {
             .build();
 
         snsClient.subscribe(subscribeRequest);
+
     }
 
     private String createQueueAndGetArn(String queue) {
