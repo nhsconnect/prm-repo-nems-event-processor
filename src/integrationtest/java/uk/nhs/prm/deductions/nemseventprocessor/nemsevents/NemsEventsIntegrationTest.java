@@ -50,7 +50,7 @@ class NemsEventsIntegrationTest {
 
         String receiving = amazonSQSAsync.getQueueUrl(UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
-        await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> messages = amazonSQSAsync.receiveMessage(receiving).getMessages();
             assertThat(messages).hasSize(1);
             assertTrue(messages.get(0).getBody().contains(nonDeductionMessageBody));
