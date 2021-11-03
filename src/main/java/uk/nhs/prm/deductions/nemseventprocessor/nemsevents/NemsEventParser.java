@@ -14,7 +14,8 @@ public class NemsEventParser {
         }
 
         String nhsNumber = messageXml.xpath("//fhir:Patient/fhir:identifier/fhir:value/@value").get(0);
+        String lastUpdated = messageXml.xpath("//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value").get(0);
 
-        return NemsEventMessage.deduction(nhsNumber);
+        return NemsEventMessage.deduction(nhsNumber, lastUpdated);
     }
 }
