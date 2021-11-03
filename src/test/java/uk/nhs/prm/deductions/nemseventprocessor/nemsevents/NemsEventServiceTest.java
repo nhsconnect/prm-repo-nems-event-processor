@@ -34,14 +34,14 @@ class NemsEventServiceTest {
 
     @Test
     void shouldPublishToDeductionsTopicWhenMessageIsDeduction() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction());
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction("111"));
         nemsEventService.processNemsEvent("a deduction");
         verify(deductionsEventPublisher).sendMessage("a deduction");
     }
 
     @Test
     void shouldNotPublishToUnhandledTopicWhenMessageIsDeduction() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction());
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction("222"));
         nemsEventService.processNemsEvent("not a deduction");
         verify(unhandledEventPublisher, times(0)).sendMessage(anyString());
     }
