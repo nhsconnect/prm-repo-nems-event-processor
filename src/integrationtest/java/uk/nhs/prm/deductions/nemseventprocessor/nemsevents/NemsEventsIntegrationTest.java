@@ -32,17 +32,28 @@ class NemsEventsIntegrationTest {
     private String nemsEventQueueName;
 
     @Test
-    void shouldSendNemsEventMessageToUnhandledTopic() {
+    void shouldSendNonDeductionNemsEventMessageToUnhandledTopic() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        String messageBody = "Test message";
-        amazonSQSAsync.sendMessage(queueUrl, messageBody);
+        String nonDeductionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <generalPractitioner>\n" +
+                "                    <reference value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
+                "                    <display value=\"SHADWELL MEDICAL CENTRE\"/>\n" +
+                "                </generalPractitioner>\n" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "</Bundle>";
+        amazonSQSAsync.sendMessage(queueUrl, nonDeductionMessageBody);
 
         String receiving = amazonSQSAsync.getQueueUrl(UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             List<Message> messages = amazonSQSAsync.receiveMessage(receiving).getMessages();
             assertThat(messages).hasSize(1);
-            assertTrue(messages.get(0).getBody().contains(messageBody));
+            assertTrue(messages.get(0).getBody().contains(nonDeductionMessageBody));
             assertTrue(messages.get(0).getAttributes().containsKey("traceId"));
         });
     }
