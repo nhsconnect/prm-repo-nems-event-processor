@@ -43,8 +43,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-aop'
     testImplementation "org.mockito:mockito-core:3.+"
-    testImplementation 'org.testcontainers:localstack:1.16.0'
-    testImplementation 'org.testcontainers:junit-jupiter:1.16.0'
     testImplementation 'org.awaitility:awaitility:3.0.0'
 }
 
@@ -52,12 +50,16 @@ sourceSets {
     integrationTest {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
+        if (System.getenv('PIPELINE_INTEGRATION_TEST') != null) {
+            java.srcDirs('./src/integrationtest/java')
+            resources.srcDirs('./src/integrationtest/resources')
+        }
     }
 }
 
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
 tasks.withType(Test) {
@@ -67,7 +69,7 @@ tasks.withType(Test) {
 task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
-    shouldRunAfter test
+    mustRunAfter tasks.test
 }
 
 jacocoTestReport {

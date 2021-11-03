@@ -23,6 +23,8 @@ pipelines:
                       - -c
                       - ./tasks test_unit
             test_integration:
+              environment_variables:
+                PIPELINE_INTEGRATION_TEST: true
               resources:
                 - docker
               artifacts:
