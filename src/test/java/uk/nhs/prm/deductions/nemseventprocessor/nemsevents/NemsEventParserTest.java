@@ -50,6 +50,26 @@ class NemsEventParserTest {
     }
 
     @Test
+    void shouldTreatAMessageThatIsNotAFhirMessageAsANonDeduction() {
+        NemsEventMessage message = nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
+
+        assertFalse(message.isDeduction());
+    }
+
+    @Test
+    void shouldTreatAMessageThatDoesNotHaveAFhirPatientEntryAsANonDeduction() {
+        String messageBody= "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                            "    <entry>\n" +
+                            "        <resource></resource>\n" +
+                            "    </entry>\n" +
+                            "</Bundle>";
+
+        NemsEventMessage message = nemsEventParser.parse(messageBody);
+
+        assertFalse(message.isDeduction());
+    }
+
+    @Test
     void shouldParseANemsMessageAsANonDeductionWhenGPFieldIsPresentInThePatientSection() {
         String messageBody= "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <entry>\n" +
