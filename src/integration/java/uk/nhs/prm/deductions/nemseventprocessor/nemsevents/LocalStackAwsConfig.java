@@ -21,7 +21,9 @@ import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @TestConfiguration
@@ -43,26 +45,26 @@ public class LocalStackAwsConfig {
         return AmazonSQSAsyncClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localstack:4566", "eu-west-2"))
-            .build();
+                .build();
     }
 
     @Bean
     public SnsClient snsClient() {
         return SnsClient.builder()
-            .endpointOverride(URI.create("http://localstack:4566"))
-            .region(Region.EU_WEST_2)
-            .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                @Override
-                public String accessKeyId() {
-                    return "FAKE";
-                }
+                .endpointOverride(URI.create("http://localstack:4566"))
+                .region(Region.EU_WEST_2)
+                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                    @Override
+                    public String accessKeyId() {
+                        return "FAKE";
+                    }
 
-                @Override
-                public String secretAccessKey() {
-                    return "FAKE";
-                }
-            }))
-            .build();
+                    @Override
+                    public String secretAccessKey() {
+                        return "FAKE";
+                    }
+                }))
+                .build();
     }
 
     @PostConstruct
@@ -75,11 +77,14 @@ public class LocalStackAwsConfig {
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queue) {
         String testReceiverQueueArn = createQueueAndGetArn(queue);
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("RawMessageDelivery", "True");
         SubscribeRequest subscribeRequest = SubscribeRequest.builder()
-            .topicArn(topic.topicArn())
-            .protocol("sqs")
-            .endpoint(testReceiverQueueArn)
-            .build();
+                .topicArn(topic.topicArn())
+                .protocol("sqs")
+                .endpoint(testReceiverQueueArn)
+                .attributes(attributes)
+                .build();
 
         snsClient.subscribe(subscribeRequest);
 
