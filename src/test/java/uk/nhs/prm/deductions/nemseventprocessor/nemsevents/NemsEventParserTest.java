@@ -253,7 +253,6 @@ class NemsEventParserTest {
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isDeduction());
-        assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
-        //assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
+        assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
     }
 }

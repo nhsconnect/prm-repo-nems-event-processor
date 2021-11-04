@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import org.joda.time.DateTime;
 
+import java.util.HashMap;
 import java.util.Map;
 
 interface HasSensitiveData {
@@ -20,13 +21,13 @@ public class NemsEventMessage implements HasSensitiveData {
     private final NemsEventType eventType;
     private String nhsNumber;
     private String lastUpdated;
-    private String odsCode;
+    private String previousOdsCode;
 
-    private NemsEventMessage(NemsEventType eventType, String nhsNumber, String lastUpdated, String odsCode) {
+    private NemsEventMessage(NemsEventType eventType, String nhsNumber, String lastUpdated, String previousOdsCode) {
         this.eventType = eventType;
         this.nhsNumber = nhsNumber;
         this.lastUpdated = lastUpdated;
-        this.odsCode = odsCode;
+        this.previousOdsCode = previousOdsCode;
     }
 
     public boolean isDeduction() {
@@ -41,12 +42,10 @@ public class NemsEventMessage implements HasSensitiveData {
         return new DateTime(lastUpdated);
     }
 
-    public String getPreviousOdsCode() {
-        return this.odsCode;
-    }
-
     @Override
     public Map<String, String> exposeSensitiveData() {
-        return null;
+        HashMap<String, String> sensitiveData = new HashMap<>();
+        sensitiveData.put("previousOdsCode", this.previousOdsCode);
+        return sensitiveData;
     }
 }
