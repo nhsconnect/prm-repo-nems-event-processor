@@ -5,8 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class NemsEventParserTest {
@@ -144,9 +143,6 @@ class NemsEventParserTest {
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
-                "                <meta>\n" +
-                "                    <profile value=\"https://fhir.hl7.org.uk/STU3/StructureDefinition/CareConnect-Patient-1\"/>\n" +
-                "                </meta>\n" +
                 "                <identifier>\n" +
                 "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
                 "                    <value value=\"9912003888\"/>\n" +
@@ -215,9 +211,6 @@ class NemsEventParserTest {
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
-                "                <meta>\n" +
-                "                    <profile value=\"https://fhir.hl7.org.uk/STU3/StructureDefinition/CareConnect-Patient-1\"/>\n" +
-                "                </meta>\n" +
                 "                <identifier>\n" +
                 "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
                 "                    <value value=\"9912003888\"/>\n" +

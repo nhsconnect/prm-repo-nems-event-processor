@@ -7,27 +7,54 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NemsEventParser {
-    public NemsEventMessage parse(String messageBody) {
-        XML messageXml = parseMessageXML(messageBody);
-        if (hasNoPatient(messageXml)) {
+    public NemsEventMessage parse(final String messageBody) {
+        final XML messageXml = parseMessageXML(messageBody);
+        if (hasNoPatientEntry(messageXml)) {
             return NemsEventMessage.nonDeduction();
         }
 
-        if (hasNoGP(messageXml)) {
+        if (hasNoGpEntry(messageXml)) {
             return createDeductionMessage(messageXml);
         }
         return NemsEventMessage.nonDeduction();
-
     }
 
     @NotNull
-    private NemsEventMessage createDeductionMessage(XML messageXml) {
-        String nhsNumber = messageXml.xpath("//fhir:Patient/fhir:identifier/fhir:value/@value").get(0);
-        String lastUpdated = messageXml.xpath("//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value").get(0);
-        String previousGpReferenceUrl = messageXml.xpath("//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value").get(0);
-        String odsCode = messageXml.xpath("//fhir:entry[fhir:fullUrl/@value='" + previousGpReferenceUrl + "']/fhir:resource/fhir:Organization/fhir:identifier[contains(fhir:system/@value,'ods-organization-code')]/fhir:value/@value").get(0);
+    private NemsEventMessage createDeductionMessage(final XML messageXml) {
+        final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
+        final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
 
-        return NemsEventMessage.deduction(nhsNumber, lastUpdated, odsCode);
+        return NemsEventMessage.deduction(extractNhsNumber(messageXml),
+                extractWhenLastUpdated(messageXml),
+                extractOdsCode(organizationXml));
+    }
+
+    private String extractPreviousGpUrl(XML messageXml) {
+        return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
+    }
+
+    private XML findOrganizationByUrl(XML messageXml, String organizationUrl) {
+        return messageXml.nodes("//fhir:entry[fhir:fullUrl/@value='" + organizationUrl + "']/fhir:resource/fhir:Organization").get(0);
+    }
+
+    private String extractOdsCode(XML organizationXml) {
+        return query(organizationXml, "fhir:identifier[contains(fhir:system/@value,'ods-organization-code')]/fhir:value/@value");
+    }
+
+    private String extractNhsNumber(XML messageXml) {
+        return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:value/@value");
+    }
+
+    private String extractWhenLastUpdated(XML messageXml) {
+        return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
+    }
+
+    private boolean hasNoPatientEntry(XML messageXml) {
+        return messageXml.nodes("//fhir:Patient").isEmpty();
+    }
+
+    private boolean hasNoGpEntry(XML messageXml) {
+        return messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty();
     }
 
     @NotNull
@@ -35,11 +62,7 @@ public class NemsEventParser {
         return new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
     }
 
-    private boolean hasNoPatient(XML messageXml) {
-        return messageXml.nodes("//fhir:Patient").isEmpty();
-    }
-
-    private boolean hasNoGP(XML messageXml) {
-        return messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty();
+    private String query(XML messageXml, String query) {
+        return messageXml.xpath(query).get(0);
     }
 }
