@@ -1,11 +1,11 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class NemsEventParserTest {
@@ -133,7 +133,7 @@ class NemsEventParserTest {
 
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertThat(message.getNhsNumber()).isEqualTo("9912003888");
+        assertThat(message.exposeSensitiveData().get("nhsNumber")).isEqualTo("9912003888");
     }
 
     @Test
@@ -201,7 +201,7 @@ class NemsEventParserTest {
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isDeduction());
-        assertThat(message.getLastUpdated()).isEqualTo(new DateTime("2017-11-01T15:00:33+00:00"));
+        assertThat(message.exposeSensitiveData().get("lastUpdated")).isEqualTo("2017-11-01T15:00:33+00:00");
     }
 
     @Test
