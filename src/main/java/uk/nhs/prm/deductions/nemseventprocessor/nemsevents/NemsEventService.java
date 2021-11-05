@@ -1,5 +1,6 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,10 @@ public class NemsEventService {
 
     public void processNemsEvent(String message) {
         NemsEventMessage parsedMessage = parser.parse(message);
-        if(parsedMessage.isDeduction()) {
-            deductionEventPublisher.sendMessage(message);
-        }
-        else {
+        String parsedMessageAsJson = new Gson().toJson(parsedMessage.exposeSensitiveData());
+        if (parsedMessage.isDeduction()) {
+            deductionEventPublisher.sendMessage(parsedMessageAsJson);
+        } else {
             unhandledEventPublisher.sendMessage(message);
         }
     }
