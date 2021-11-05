@@ -84,6 +84,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     ]
     resources = [
       aws_sns_topic.unhandled_events.arn,
+      aws_sns_topic.deductions.arn
     ]
   }
 }
@@ -128,7 +129,7 @@ resource "aws_iam_policy" "cloudwatch_metrics_policy" {
   policy = data.aws_iam_policy_document.cloudwatch_metrics_policy_doc.json
 }
 
-resource "aws_iam_policy" "unhandled_events_sns" {
+resource "aws_iam_policy" "nems_events_processor_sns" {
   name   = "${var.environment}-${var.component_name}-sns"
   policy = data.aws_iam_policy_document.sns_policy_doc.json
 }
@@ -158,9 +159,9 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "unhandled_events_sns" {
+resource "aws_iam_role_policy_attachment" "nems_events_processor_sns" {
   role       = aws_iam_role.component-ecs-role.name
-  policy_arn = aws_iam_policy.unhandled_events_sns.arn
+  policy_arn = aws_iam_policy.nems_events_processor_sns.arn
 }
 
 resource "aws_iam_role_policy_attachment" "nems_events_processor_kms" {
