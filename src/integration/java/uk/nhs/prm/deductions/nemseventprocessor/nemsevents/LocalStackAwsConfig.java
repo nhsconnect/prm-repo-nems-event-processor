@@ -30,6 +30,7 @@ import java.util.Map;
 public class LocalStackAwsConfig {
 
     public final static String UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE = "unhandled_test_receiver";
+    public final static String DEDUCTIONS_TEST_RECEIVING_QUEUE = "deductions_test_receiver";
 
     @Autowired
     private AmazonSQSAsync amazonSQSAsync;
@@ -71,8 +72,10 @@ public class LocalStackAwsConfig {
     public void setupTestQueuesAndTopics() {
         amazonSQSAsync.createQueue(nemsEventQueueName);
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_unhandled_events_topic").build());
+        CreateTopicResponse deductions_topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_deductions_topic").build());
 
         createSnsTestReceiverSubscription(topic, UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE);
+        createSnsTestReceiverSubscription(deductions_topic, DEDUCTIONS_TEST_RECEIVING_QUEUE);
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queue) {
@@ -87,7 +90,6 @@ public class LocalStackAwsConfig {
                 .build();
 
         snsClient.subscribe(subscribeRequest);
-
     }
 
     private String createQueueAndGetArn(String queue) {
