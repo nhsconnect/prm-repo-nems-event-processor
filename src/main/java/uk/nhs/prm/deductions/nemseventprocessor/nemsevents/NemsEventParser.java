@@ -2,21 +2,28 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class NemsEventParser {
     public NemsEventMessage parse(final String messageBody) {
-        final XML messageXml = parseMessageXML(messageBody);
-        if (hasNoPatientEntry(messageXml)) {
-            return NemsEventMessage.nonDeduction();
-        }
+        try {
+            final XML messageXml = parseMessageXML(messageBody);
+            if (hasNoPatientEntry(messageXml)) {
+                return NemsEventMessage.nonDeduction();
+            }
 
-        if (hasNoGpEntry(messageXml)) {
-            return createDeductionMessage(messageXml);
+            if (hasNoGpEntry(messageXml)) {
+                return createDeductionMessage(messageXml);
+            }
+            return NemsEventMessage.nonDeduction();
+        } catch (RuntimeException exception) {
+            log.info("Failed to parse NEMS event message", exception);
+            throw new NemsEventParseException(exception);
         }
-        return NemsEventMessage.nonDeduction();
     }
 
     @NotNull

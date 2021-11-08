@@ -4,8 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class NemsEventParserTest {
@@ -247,5 +246,25 @@ class NemsEventParserTest {
 
         assertTrue(message.isDeduction());
         assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
+    }
+
+    @Test
+    void shouldThrowParsingExceptionWhenPassedNonXml() {
+        NemsEventParser nemsEventParser = new NemsEventParser();
+
+        assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse("not-an-xml");
+        });
+    }
+
+    @Test
+    void shouldIncludeCauseOfErrorInParsingExceptionWhenPassedNonXml() {
+        NemsEventParser nemsEventParser = new NemsEventParser();
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse("not-an-xml");
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("Can't parse");
     }
 }

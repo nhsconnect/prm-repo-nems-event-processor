@@ -44,7 +44,7 @@ class NemsEventListenerTest {
 
     @Test
     @SuppressFBWarnings
-    void shouldNotAcknowledgeOrProcessMessageIfProcessingFails() throws JMSException {
+    void shouldNotAcknowledgeOrProcessMessageIfJMSReceivingFails() throws JMSException {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
@@ -53,6 +53,18 @@ class NemsEventListenerTest {
         nemsEventListener.onMessage(message);
         verifyNoInteractions(nemsEventService);
         verifyNoMoreInteractions(message);
+    }
+
+    @Test
+    @SuppressFBWarnings
+    void shouldNotAcknowledgeTheMessageIfProcessingFailsForAnyUncheckedException() throws JMSException {
+        String payload = "payload";
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
+
+        doThrow(new RuntimeException("unchecked")).when(nemsEventService).processNemsEvent(anyString());
+
+        nemsEventListener.onMessage(message);
+        verify(message, never()).acknowledge();
     }
 
     @Test

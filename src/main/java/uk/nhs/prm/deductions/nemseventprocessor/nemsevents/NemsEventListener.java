@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
@@ -27,7 +26,7 @@ public class NemsEventListener implements MessageListener {
             nemsEventService.processNemsEvent(payload);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Nems Event Message");
-        } catch (JMSException e) {
+        } catch (Exception e) {
             log.error("Error while processing message: {}", e.getMessage());
         }
     }
