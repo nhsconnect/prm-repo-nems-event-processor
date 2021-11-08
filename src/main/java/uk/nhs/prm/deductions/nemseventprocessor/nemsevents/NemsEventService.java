@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.nemseventprocessor.deductions.DeductionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
+import java.util.Map;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -17,12 +19,20 @@ public class NemsEventService {
     private final DeductionsEventPublisher deductionEventPublisher;
 
     public void processNemsEvent(String message) {
-        NemsEventMessage parsedMessage = parser.parse(message);
-        String parsedMessageAsJson = new Gson().toJson(parsedMessage.exposeSensitiveData());
-        if (parsedMessage.isDeduction()) {
-            deductionEventPublisher.sendMessage(parsedMessageAsJson);
-        } else {
-            unhandledEventPublisher.sendMessage(message);
+        try {
+            NemsEventMessage parsedMessage = parser.parse(message);
+            if (parsedMessage.isDeduction()) {
+                deductionEventPublisher.sendMessage(toJson(parsedMessage.exposeSensitiveData()));
+                return;
+            }
+            unhandledEventPublisher.sendMessage(message, "Non-deduction");
         }
+        catch (Exception e) {
+            unhandledEventPublisher.sendMessage(message, e.getMessage());
+        }
+    }
+
+    private String toJson(Map<String, String> data) {
+        return new Gson().toJson(data);
     }
 }

@@ -25,11 +25,11 @@ class NemsEventServiceTest {
     private NemsEventService nemsEventService;
 
     @Test
-    void shouldCallPublisherWithUnhandledNemsEvents() {
+    void shouldPublishNonDeductionsToTheUnhandledQueue() {
         when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonDeduction());
         String unhandledNemsEvent = "unhandledNemsEvent";
         nemsEventService.processNemsEvent(unhandledNemsEvent);
-        verify(unhandledEventPublisher).sendMessage(unhandledNemsEvent);
+        verify(unhandledEventPublisher).sendMessage(unhandledNemsEvent, "Non-deduction");
     }
 
     @Test
@@ -43,6 +43,14 @@ class NemsEventServiceTest {
     void shouldNotPublishToUnhandledTopicWhenMessageIsDeduction() {
         when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction("222", "2022-10-21", "A34564"));
         nemsEventService.processNemsEvent("not sent to unhandled");
-        verify(unhandledEventPublisher, times(0)).sendMessage(anyString());
+        verify(unhandledEventPublisher, times(0)).sendMessage(anyString(), anyString());
+    }
+
+    @Test
+    void shouldPublishEventsToUnhandledTopicIfFailsToParse() {
+        when(nemsEventParser.parse(anyString())).thenThrow(new NemsEventParseException("failed-to-parse"));
+        String incomingMessage = "will throw a parse exception";
+        nemsEventService.processNemsEvent(incomingMessage);
+        verify(unhandledEventPublisher, times(1)).sendMessage(incomingMessage, "NemsEventParseException: failed-to-parse");
     }
 }

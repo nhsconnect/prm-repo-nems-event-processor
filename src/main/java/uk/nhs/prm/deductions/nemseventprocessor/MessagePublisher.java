@@ -20,7 +20,14 @@ public class MessagePublisher {
     private final Tracer tracer;
 
     public void sendMessage(String topicArn, String message) {
+        sendMessage(topicArn, message, null, null);
+    }
+
+    public void sendMessage(String topicArn, String message, String attributeKey, String attributeValue) {
         Map<String, MessageAttributeValue> messageAttributes = createMessageAttributes();
+        if (attributeKey != null) {
+            messageAttributes.put(attributeKey, getMessageAttributeValue(attributeValue));
+        }
 
         PublishRequest request = PublishRequest.builder()
                 .message(message)
@@ -35,10 +42,14 @@ public class MessagePublisher {
 
     private Map<String, MessageAttributeValue> createMessageAttributes() {
         Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
-        messageAttributes.put("traceId", MessageAttributeValue.builder()
-                .dataType("String")
-                .stringValue(tracer.getTraceId())
-                .build());
+        messageAttributes.put("traceId", getMessageAttributeValue(tracer.getTraceId()));
         return messageAttributes;
+    }
+
+    private MessageAttributeValue getMessageAttributeValue(String attributeValue) {
+        return MessageAttributeValue.builder()
+                .dataType("String")
+                .stringValue(attributeValue)
+                .build();
     }
 }

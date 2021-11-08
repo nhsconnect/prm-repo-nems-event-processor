@@ -16,7 +16,7 @@ public class UnhandledEventPublisher {
         this.unhandledEventsSnsTopicArn = unhandledEventsSnsTopicArn;
     }
 
-    public void sendMessage(String message) {
-        messagePublisher.sendMessage(this.unhandledEventsSnsTopicArn, message);
+    public void sendMessage(String message, String reasonUnhandled) {
+        messagePublisher.sendMessage(this.unhandledEventsSnsTopicArn, message, "reasonUnhandled", reasonUnhandled);
     }
 }
