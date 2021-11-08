@@ -43,6 +43,17 @@ class NemsEventParserTest {
             "        </resource>\n" +
             "    </entry>";
 
+    public static final String PATIENT_ENTRY = "    <entry>\n" +
+            "        <resource>\n" +
+            "            <Patient>\n" +
+            "                <identifier>\n" +
+            "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
+            "                    <value value=\"9912003888\"/>\n" +
+            "                </identifier>\n" +
+            "            </Patient>\n" +
+            "        </resource>\n" +
+            "    </entry>\n";
+
     NemsEventParser nemsEventParser;
 
     @BeforeEach
@@ -90,6 +101,19 @@ class NemsEventParserTest {
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
         assertFalse(message.isDeduction());
+    }
+
+    @Test
+    void shouldFailToParseIfThereIsMoreThanOnePatientEntry() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY +
+                PATIENT_ENTRY +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        assertThrows(NemsEventParseException.class, () -> nemsEventParser.parse(messageBody));
     }
 
     @Test

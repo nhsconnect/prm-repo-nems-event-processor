@@ -6,24 +6,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class NemsEventParser {
     public NemsEventMessage parse(final String messageBody) {
         try {
-            final XML messageXml = parseMessageXML(messageBody);
-            if (hasNoPatientEntry(messageXml)) {
-                return NemsEventMessage.nonDeduction();
-            }
-
-            if (hasNoGpEntry(messageXml)) {
-                return createDeductionMessage(messageXml);
-            }
-            return NemsEventMessage.nonDeduction();
+            return tryToParse(messageBody);
         } catch (RuntimeException exception) {
             log.info("Failed to parse NEMS event message", exception);
             throw new NemsEventParseException(exception);
         }
+    }
+
+    @NotNull
+    private NemsEventMessage tryToParse(String messageBody) {
+        final XML messageXml = parseMessageXML(messageBody);
+        if (hasNoPatientEntry(messageXml)) {
+            return NemsEventMessage.nonDeduction();
+        }
+
+        if (hasNoGpEntry(messageXml)) {
+            return createDeductionMessage(messageXml);
+        }
+        return NemsEventMessage.nonDeduction();
     }
 
     @NotNull
@@ -70,6 +77,10 @@ public class NemsEventParser {
     }
 
     private String query(XML messageXml, String query) {
-        return messageXml.xpath(query).get(0);
+        List<String> xpath = messageXml.xpath(query);
+        if (xpath.size() > 1) {
+            throw new NemsEventParseException("More than a single instance found of: " + query);
+        }
+        return xpath.get(0);
     }
 }
