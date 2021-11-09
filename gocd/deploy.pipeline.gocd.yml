@@ -36,7 +36,7 @@ common:
           deploy: *deploy_job
 pipelines:
   'prm-deductions-nems-event-processor.dev':
-    group: automatic-trigger
+    group: continuity-service
     label_template: '${git[:8]}'
     materials:
       git:
@@ -52,7 +52,7 @@ pipelines:
     stages: *common_stages
 
   'prm-deductions-nems-event-processor.test':
-    group: automatic-trigger
+    group: continuity-service
     label_template: '${git[:8]}'
     materials:
       git:
@@ -71,7 +71,7 @@ pipelines:
     stages: *common_stages
 
   'prm-deductions-nems-event-processor.pre-prod':
-    group: automatic-trigger
+    group: continuity-service
     label_template: '${git[:8]}'
     materials:
       git:
