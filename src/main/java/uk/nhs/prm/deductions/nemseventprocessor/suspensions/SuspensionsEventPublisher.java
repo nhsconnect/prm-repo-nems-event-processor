@@ -1,4 +1,4 @@
-package uk.nhs.prm.deductions.nemseventprocessor.deductions;
+package uk.nhs.prm.deductions.nemseventprocessor.suspensions;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

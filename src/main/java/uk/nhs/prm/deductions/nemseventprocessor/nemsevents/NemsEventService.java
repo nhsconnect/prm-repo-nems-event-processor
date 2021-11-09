@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.deductions.nemseventprocessor.deductions.SuspensionsEventPublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
 import java.util.Map;

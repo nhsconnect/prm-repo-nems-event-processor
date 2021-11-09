@@ -1,4 +1,4 @@
-package uk.nhs.prm.deductions.nemseventprocessor.deductions;
+package uk.nhs.prm.deductions.nemseventprocessor.suspensions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
