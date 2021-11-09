@@ -120,6 +120,17 @@ resource "aws_sns_topic" "deductions" {
   }
 }
 
+resource "aws_sns_topic" "suspensions" {
+  name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
+  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_sqs_queue" "deductions_observability" {
   name                       = "${var.environment}-${var.component_name}-deductions-observability-queue"
   message_retention_seconds  = 1800
@@ -132,6 +143,18 @@ resource "aws_sqs_queue" "deductions_observability" {
   }
 }
 
+resource "aws_sqs_queue" "suspensions_observability" {
+  name                       = "${var.environment}-${var.component_name}-suspensions-observability-queue"
+  message_retention_seconds  = 1800
+  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-suspensions-observability-queue"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_sns_topic_subscription" "deductions_events_to_observability_queue" {
   protocol             = "sqs"
   raw_message_delivery = true
@@ -139,9 +162,21 @@ resource "aws_sns_topic_subscription" "deductions_events_to_observability_queue"
   endpoint             = aws_sqs_queue.deductions_observability.arn
 }
 
+resource "aws_sns_topic_subscription" "suspensions_events_to_observability_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.suspensions.arn
+  endpoint             = aws_sqs_queue.suspensions_observability.arn
+}
+
 resource "aws_sqs_queue_policy" "deductions_subscription" {
   queue_url = aws_sqs_queue.deductions_observability.id
   policy    = data.aws_iam_policy_document.deductions_sns_topic_access_to_queue.json
+}
+
+resource "aws_sqs_queue_policy" "suspensions_subscription" {
+  queue_url = aws_sqs_queue.suspensions_observability.id
+  policy    = data.aws_iam_policy_document.suspensions_sns_topic_access_to_queue.json
 }
 
 data "aws_iam_policy_document" "deductions_sns_topic_access_to_queue" {
@@ -169,3 +204,27 @@ data "aws_iam_policy_document" "deductions_sns_topic_access_to_queue" {
   }
 }
 
+data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.suspensions_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.suspensions.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}

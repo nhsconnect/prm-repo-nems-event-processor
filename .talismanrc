@@ -1,0 +1,3 @@
+allowed_patterns:
+- kms_key
+- kms_master_key_id
