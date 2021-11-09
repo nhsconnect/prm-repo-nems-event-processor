@@ -22,12 +22,15 @@ public class NemsEventService {
         try {
             NemsEventMessage parsedMessage = parser.parse(message);
             if (parsedMessage.isSuspension()) {
+                log.info("SUSPENSION event - sending to suspensions sns topic");
                 suspensionsEventPublisher.sendMessage(toJson(parsedMessage.exposeSensitiveData()));
                 return;
             }
+            log.info("NON-SUSPENSION event - sending to unhandled sns topic");
             unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
+            log.info("PROCESSING FAILED - sending to unhandled sns topic");
             unhandledEventPublisher.sendMessage(message, e.getMessage());
         }
     }

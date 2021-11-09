@@ -13,6 +13,7 @@ import java.util.List;
 public class NemsEventParser {
     public NemsEventMessage parse(final String messageBody) {
         try {
+            log.info("Parsing message");
             return tryToParse(messageBody);
         } catch (RuntimeException exception) {
             log.info("Failed to parse NEMS event message", exception);
@@ -24,12 +25,15 @@ public class NemsEventParser {
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
         if (hasNoPatientEntry(messageXml)) {
+            log.warn("NEMS event has no patient entry");
             return NemsEventMessage.nonSuspension();
         }
 
         if (hasNoGpEntry(messageXml)) {
+            log.info("NEMS event has no current GP");
             return createSuspensionMessage(messageXml);
         }
+
         return NemsEventMessage.nonSuspension();
     }
 
