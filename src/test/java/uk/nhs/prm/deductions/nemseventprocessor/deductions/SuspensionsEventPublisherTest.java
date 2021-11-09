@@ -10,23 +10,23 @@ import uk.nhs.prm.deductions.nemseventprocessor.MessagePublisher;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DeductionsEventPublisherTest {
+class SuspensionsEventPublisherTest {
 
     @Mock
     private MessagePublisher messagePublisher;
 
-    private final static String deductionsTopicArn = "deductionsTopicArn";
+    private final static String suspensionsTopicArn = "suspensionsTopicArn";
 
-    private DeductionsEventPublisher deductionsEventPublisher;
+    private SuspensionsEventPublisher suspensionsEventPublisher;
 
     @BeforeEach
     void setUp() {
-        deductionsEventPublisher = new DeductionsEventPublisher(messagePublisher, deductionsTopicArn);
+        suspensionsEventPublisher = new SuspensionsEventPublisher(messagePublisher, suspensionsTopicArn);
     }
 
     @Test
     void shouldPublishMessageToTheUnhandledTopic() {
-        deductionsEventPublisher.sendMessage("message");
-        verify(messagePublisher).sendMessage(deductionsTopicArn, "message");
+        suspensionsEventPublisher.sendMessage("message");
+        verify(messagePublisher).sendMessage(suspensionsTopicArn, "message");
     }
 }

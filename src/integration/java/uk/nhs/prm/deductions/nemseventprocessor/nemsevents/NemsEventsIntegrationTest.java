@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.DEDUCTIONS_TEST_RECEIVING_QUEUE;
+import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.SUSPENSIONS_TEST_RECEIVING_QUEUE;
 import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE;
 
 @SpringBootTest()
@@ -35,9 +35,9 @@ class NemsEventsIntegrationTest {
     private String nemsEventQueueName;
 
     @Test
-    void shouldSendNonDeductionNemsEventMessageToUnhandledTopic() {
+    void shouldSendNonSuspensionNemsEventMessageToUnhandledTopic() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        String nonDeductionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+        String nonSuspensionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
@@ -49,7 +49,7 @@ class NemsEventsIntegrationTest {
                 "        </resource>\n" +
                 "    </entry>\n" +
                 "</Bundle>";
-        amazonSQSAsync.sendMessage(queueUrl, nonDeductionMessageBody);
+        amazonSQSAsync.sendMessage(queueUrl, nonSuspensionMessageBody);
 
         String receiving = amazonSQSAsync.getQueueUrl(UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
@@ -67,13 +67,13 @@ class NemsEventsIntegrationTest {
         });
         assertFalse(receivedMessageHolder[0].getMessageAttributes().isEmpty());
         assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
-        assertTrue(receivedMessageHolder[0].getBody().contains(nonDeductionMessageBody));
+        assertTrue(receivedMessageHolder[0].getBody().contains(nonSuspensionMessageBody));
     }
 
     @Test
-    void shouldSendDeductionNemsEventMessageToDeductionsSnsTopic() {
+    void shouldSendSuspensionNemsEventMessageToSuspensionsSnsTopic() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        String deductionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+        String suspensionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <id value=\"236a1d4a-5d69-4fa9-9c7f-e72bf505aa5b\"/>\n" +
                 "    <meta>\n" +
                 "        <profile value=\"http://hl7.org/fhir/STU3/StructureDefinition/Bundle\"/>\n" +
@@ -124,9 +124,9 @@ class NemsEventsIntegrationTest {
                 "    </entry>\n" +
                 "</Bundle>";
 
-        amazonSQSAsync.sendMessage(queueUrl, deductionMessageBody);
+        amazonSQSAsync.sendMessage(queueUrl, suspensionMessageBody);
 
-        String receiving = amazonSQSAsync.getQueueUrl(DEDUCTIONS_TEST_RECEIVING_QUEUE).getQueueUrl();
+        String receiving = amazonSQSAsync.getQueueUrl(SUSPENSIONS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
         Message[] receivedMessageHolder = new Message[1];
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -142,6 +142,6 @@ class NemsEventsIntegrationTest {
         });
         assertFalse(receivedMessageHolder[0].getMessageAttributes().isEmpty());
         assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
-        assertTrue(receivedMessageHolder[0].getBody().contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"DEDUCTION\",\"nhsNumber\":\"9912003888\"}"));
+        assertTrue(receivedMessageHolder[0].getBody().contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}"));
     }
 }

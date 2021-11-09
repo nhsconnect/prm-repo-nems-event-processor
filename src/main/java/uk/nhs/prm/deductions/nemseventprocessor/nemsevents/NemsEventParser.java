@@ -24,21 +24,21 @@ public class NemsEventParser {
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
         if (hasNoPatientEntry(messageXml)) {
-            return NemsEventMessage.nonDeduction();
+            return NemsEventMessage.nonSuspension();
         }
 
         if (hasNoGpEntry(messageXml)) {
-            return createDeductionMessage(messageXml);
+            return createSuspensionMessage(messageXml);
         }
-        return NemsEventMessage.nonDeduction();
+        return NemsEventMessage.nonSuspension();
     }
 
     @NotNull
-    private NemsEventMessage createDeductionMessage(final XML messageXml) {
+    private NemsEventMessage createSuspensionMessage(final XML messageXml) {
         final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
         final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
 
-        return NemsEventMessage.deduction(extractNhsNumber(messageXml),
+        return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
                 extractOdsCode(organizationXml));
     }

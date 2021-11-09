@@ -62,7 +62,7 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldParseANemsMessageAsADeductionWhenGPFieldIsMissing() {
+    void shouldParseANemsMessageAsASuspensionWhenGPFieldIsMissing() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
                 "    <entry>\n" +
@@ -80,18 +80,18 @@ class NemsEventParserTest {
 
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertTrue(message.isDeduction());
+        assertTrue(message.isSuspension());
     }
 
     @Test
-    void shouldTreatAMessageThatIsNotAFhirMessageAsANonDeduction() {
+    void shouldTreatAMessageThatIsNotAFhirMessageAsANonSuspension() {
         NemsEventMessage message = nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
 
-        assertFalse(message.isDeduction());
+        assertFalse(message.isSuspension());
     }
 
     @Test
-    void shouldTreatAMessageThatDoesNotHaveAFhirPatientEntryAsANonDeduction() {
+    void shouldTreatAMessageThatDoesNotHaveAFhirPatientEntryAsANonSuspension() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <entry>\n" +
                 "        <resource></resource>\n" +
@@ -100,7 +100,7 @@ class NemsEventParserTest {
 
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertFalse(message.isDeduction());
+        assertFalse(message.isSuspension());
     }
 
     @Test
@@ -117,7 +117,7 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldParseANemsMessageAsANonDeductionWhenGPFieldIsPresentInThePatientSection() {
+    void shouldParseANemsMessageAsANonSuspensionWhenGPFieldIsPresentInThePatientSection() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <entry>\n" +
                 "        <resource>\n" +
@@ -133,7 +133,7 @@ class NemsEventParserTest {
 
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertFalse(message.isDeduction());
+        assertFalse(message.isSuspension());
     }
 
     @Test
@@ -160,7 +160,7 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldParseANemsMessageAsADeductionWhenGPFieldIsPresentOnlyInNonPatientEntriesInTheMessage() {
+    void shouldParseANemsMessageAsASuspensionWhenGPFieldIsPresentOnlyInNonPatientEntriesInTheMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
                 "    <entry>\n" +
@@ -190,11 +190,11 @@ class NemsEventParserTest {
         NemsEventParser nemsEventParser = new NemsEventParser();
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertTrue(message.isDeduction());
+        assertTrue(message.isSuspension());
     }
 
     @Test
-    void shouldExtractLastUpdatedFieldWhenParsingADeductionMessageSoThatItCanBeUsedToWorkOutTheLatestNemsEvent() {
+    void shouldExtractLastUpdatedFieldWhenParsingASuspensionMessageSoThatItCanBeUsedToWorkOutTheLatestNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -223,12 +223,12 @@ class NemsEventParserTest {
         NemsEventParser nemsEventParser = new NemsEventParser();
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertTrue(message.isDeduction());
+        assertTrue(message.isSuspension());
         assertThat(message.exposeSensitiveData().get("lastUpdated")).isEqualTo("2017-11-01T15:00:33+00:00");
     }
 
     @Test
-    void shouldExtractGPPracticeURLFieldWhenParsingADeductionMessage() {
+    void shouldExtractGPPracticeURLFieldWhenParsingASuspensionMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
                 "   <entry>\n" +
@@ -268,7 +268,7 @@ class NemsEventParserTest {
         NemsEventParser nemsEventParser = new NemsEventParser();
         NemsEventMessage message = nemsEventParser.parse(messageBody);
 
-        assertTrue(message.isDeduction());
+        assertTrue(message.isSuspension());
         assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
     }
 

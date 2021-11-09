@@ -5,16 +5,16 @@ import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.nemseventprocessor.MessagePublisher;
 
 @Component
-public class DeductionsEventPublisher {
-    private final String deductionsSnsTopicArn;
+public class SuspensionsEventPublisher {
+    private final String suspensionsSnsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public DeductionsEventPublisher(MessagePublisher messagePublisher, @Value("${aws.deductionsSnsTopicArn}") String deductionsSnsTopicArn) {
+    public SuspensionsEventPublisher(MessagePublisher messagePublisher, @Value("${aws.suspensionsSnsTopicArn}") String suspensionsSnsTopicArn) {
         this.messagePublisher = messagePublisher;
-        this.deductionsSnsTopicArn = deductionsSnsTopicArn;
+        this.suspensionsSnsTopicArn = suspensionsSnsTopicArn;
     }
 
     public void sendMessage(String message) {
-        messagePublisher.sendMessage(this.deductionsSnsTopicArn, message);
+        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, message);
     }
 }

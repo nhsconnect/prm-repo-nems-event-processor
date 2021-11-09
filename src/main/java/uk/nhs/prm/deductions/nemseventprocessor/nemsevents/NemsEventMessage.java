@@ -8,12 +8,12 @@ interface HasSensitiveData {
 }
 
 public class NemsEventMessage implements HasSensitiveData {
-    public static NemsEventMessage deduction(String nhsNumber, String lastUpdated, String odsCode) {
-        return new NemsEventMessage(NemsEventType.DEDUCTION, nhsNumber, lastUpdated, odsCode);
+    public static NemsEventMessage suspension(String nhsNumber, String lastUpdated, String odsCode) {
+        return new NemsEventMessage(NemsEventType.SUSPENSION, nhsNumber, lastUpdated, odsCode);
     }
 
-    public static NemsEventMessage nonDeduction() {
-        return new NemsEventMessage(NemsEventType.NON_DEDUCTION, null, null, null);
+    public static NemsEventMessage nonSuspension() {
+        return new NemsEventMessage(NemsEventType.NON_SUSPENSION, null, null, null);
     }
 
     private final NemsEventType eventType;
@@ -28,8 +28,8 @@ public class NemsEventMessage implements HasSensitiveData {
         this.previousOdsCode = previousOdsCode;
     }
 
-    public boolean isDeduction() {
-        return this.eventType == NemsEventType.DEDUCTION;
+    public boolean isSuspension() {
+        return this.eventType == NemsEventType.SUSPENSION;
     }
 
     @Override

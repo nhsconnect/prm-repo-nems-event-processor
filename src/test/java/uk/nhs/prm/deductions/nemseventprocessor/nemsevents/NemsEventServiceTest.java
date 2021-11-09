@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.deductions.nemseventprocessor.deductions.DeductionsEventPublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.deductions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -17,7 +17,7 @@ class NemsEventServiceTest {
     @Mock
     private UnhandledEventPublisher unhandledEventPublisher;
     @Mock
-    private DeductionsEventPublisher deductionsEventPublisher;
+    private SuspensionsEventPublisher suspensionsEventPublisher;
     @Mock
     private NemsEventParser nemsEventParser;
 
@@ -25,23 +25,23 @@ class NemsEventServiceTest {
     private NemsEventService nemsEventService;
 
     @Test
-    void shouldPublishNonDeductionsToTheUnhandledQueue() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonDeduction());
+    void shouldPublishNonSuspensionsToTheUnhandledQueue() {
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonSuspension());
         String unhandledNemsEvent = "unhandledNemsEvent";
         nemsEventService.processNemsEvent(unhandledNemsEvent);
-        verify(unhandledEventPublisher).sendMessage(unhandledNemsEvent, "Non-deduction");
+        verify(unhandledEventPublisher).sendMessage(unhandledNemsEvent, "Non-suspension");
     }
 
     @Test
-    void shouldPublishToDeductionsTopicWhenMessageIsDeduction() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction("111", "2023-01-01", "B12345"));
-        nemsEventService.processNemsEvent("a deduction");
-        verify(deductionsEventPublisher).sendMessage("{\"lastUpdated\":\"2023-01-01\",\"previousOdsCode\":\"B12345\",\"eventType\":\"DEDUCTION\",\"nhsNumber\":\"111\"}");
+    void shouldPublishToSuspensionsTopicWhenMessageIsSuspension() {
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("111", "2023-01-01", "B12345"));
+        nemsEventService.processNemsEvent("a suspension");
+        verify(suspensionsEventPublisher).sendMessage("{\"lastUpdated\":\"2023-01-01\",\"previousOdsCode\":\"B12345\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"111\"}");
     }
 
     @Test
-    void shouldNotPublishToUnhandledTopicWhenMessageIsDeduction() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.deduction("222", "2022-10-21", "A34564"));
+    void shouldNotPublishToUnhandledTopicWhenMessageIsSuspension() {
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("222", "2022-10-21", "A34564"));
         nemsEventService.processNemsEvent("not sent to unhandled");
         verify(unhandledEventPublisher, times(0)).sendMessage(anyString(), anyString());
     }

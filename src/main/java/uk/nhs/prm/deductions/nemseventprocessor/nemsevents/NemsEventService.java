@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.deductions.nemseventprocessor.deductions.DeductionsEventPublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.deductions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
 import java.util.Map;
@@ -16,16 +16,16 @@ public class NemsEventService {
 
     private final UnhandledEventPublisher unhandledEventPublisher;
     private final NemsEventParser parser;
-    private final DeductionsEventPublisher deductionEventPublisher;
+    private final SuspensionsEventPublisher suspensionsEventPublisher;
 
     public void processNemsEvent(String message) {
         try {
             NemsEventMessage parsedMessage = parser.parse(message);
-            if (parsedMessage.isDeduction()) {
-                deductionEventPublisher.sendMessage(toJson(parsedMessage.exposeSensitiveData()));
+            if (parsedMessage.isSuspension()) {
+                suspensionsEventPublisher.sendMessage(toJson(parsedMessage.exposeSensitiveData()));
                 return;
             }
-            unhandledEventPublisher.sendMessage(message, "Non-deduction");
+            unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
             unhandledEventPublisher.sendMessage(message, e.getMessage());
