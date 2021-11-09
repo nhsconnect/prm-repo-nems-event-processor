@@ -37,7 +37,7 @@ public class MessagePublisher {
 
         log.debug("Sending message to {}", topicArn);
         PublishResponse result = snsClient.publish(request);
-        log.info("PUBLISHED: message to {} topic. Message id: {}", topicArn, result.messageId());
+        log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicArn, result.messageId());
     }
 
     private Map<String, MessageAttributeValue> createMessageAttributes() {
