@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
 
     resources = [
       "*"
-#      "arn:aws:cloudwatch:${var.region}:${local.account_id}:metric-stream/PrmDeductions/NemsEventProcessor:*"
+#      "arn:aws:cloudwatch:${var.region}:${local.account_id}:metric-stream/NemsEventProcessor:*"
     ]
   }
 }

@@ -7,15 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricDataRequest;
-import software.amazon.awssdk.services.cloudwatch.model.ListMetricsRequest;
-import software.amazon.awssdk.services.cloudwatch.model.ListMetricsResponse;
-import software.amazon.awssdk.services.cloudwatch.model.Metric;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataQuery;
-import software.amazon.awssdk.services.cloudwatch.model.MetricDataResult;
-import software.amazon.awssdk.services.cloudwatch.model.MetricStat;
-import software.amazon.awssdk.services.cloudwatch.model.RecentlyActive;
-import software.amazon.awssdk.services.cloudwatch.model.StatusCode;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 import uk.nhs.prm.deductions.nemseventprocessor.config.ScheduledConfig;
 
 import java.time.Instant;
@@ -44,7 +36,7 @@ class HealthMetricPublicationTest {
 
         publisher.publishHealthyStatus();
 
-        List<Metric> metrics = fetchMetricsMatching("PrmDeductions/NemsEventProcessor", "Health");
+        List<Metric> metrics = fetchMetricsMatching("NemsEventProcessor", "Health");
         assertThat(metrics).isNotEmpty();
 
         int count = 0;

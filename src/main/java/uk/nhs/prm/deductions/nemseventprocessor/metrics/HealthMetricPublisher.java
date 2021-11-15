@@ -51,7 +51,7 @@ public class HealthMetricPublisher {
         PutMetricDataRequest request =
                 PutMetricDataRequest
                         .builder()
-                        .namespace("PrmDeductions/NemsEventProcessor")
+                        .namespace("NemsEventProcessor")
                         .metricData(datum)
                         .build();
 

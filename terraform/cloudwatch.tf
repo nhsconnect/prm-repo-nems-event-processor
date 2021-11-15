@@ -13,7 +13,7 @@ resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
   threshold                 = "1"
   evaluation_periods        = "3"
   metric_name               = "Health"
-  namespace                 = "PrmDeductions/NemsEventProcessor"
+  namespace                 = "NemsEventProcessor"
   alarm_description         = "Alarm to flag failed health checks"
   statistic                 = "Maximum"
   treat_missing_data        = "breaching"
