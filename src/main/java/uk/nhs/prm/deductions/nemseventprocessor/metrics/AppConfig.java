@@ -8,19 +8,13 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 @Configuration
 public class AppConfig {
     private final String environment;
-    private final Double metricHealthValue;
 
-    public AppConfig(@Value("${environment}")String environment, @Value("${metric.health.value}") Double metricHealthValue) {
+    public AppConfig(@Value("${environment}")String environment) {
         this.environment = environment;
-        this.metricHealthValue = metricHealthValue;
     }
 
     public String environment() {
         return environment;
-    }
-
-    public Double metricHealthValue() {
-        return metricHealthValue;
     }
 
     @Bean

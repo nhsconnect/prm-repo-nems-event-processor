@@ -12,58 +12,48 @@ import uk.nhs.prm.deductions.nemseventprocessor.config.ScheduledConfig;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @SpringJUnitConfig(ScheduledConfig.class)
-@TestPropertySource(properties = {"environment = ci", "metric.health.value = 1.0"})
+@TestPropertySource(properties = {"environment = ci"})
 @ExtendWith(MockitoExtension.class)
 class HealthMetricPublicationTest {
 
     CloudWatchClient cloudWatchClient = CloudWatchClient.create();
-
+    static final double HEALTHY_HEALTH_VALUE = 1.0;
 
     @Test
-    void shouldPutHealthMetricDataIntoCloudWatch() throws InterruptedException {
-
-        AppConfig config = new AppConfig("ci", 1.0);
+    void shouldPutHealthMetricDataIntoCloudWatch() {
+        AppConfig config = new AppConfig("ci");
         MetricPublisher metricPublisher = new MetricPublisher(cloudWatchClient, config);
-        HealthMetricPublisher publisher = new HealthMetricPublisher(config, metricPublisher);
+        SqsHealthProbe sqsHealthProbe = new SqsHealthProbe();
+        HealthMetricPublisher publisher = new HealthMetricPublisher(metricPublisher, sqsHealthProbe);
 
-        publisher.publishHealthyStatus();
+        publisher.publishHealthStatus();
 
         List<Metric> metrics = fetchMetricsMatching("NemsEventProcessor", "Health");
         assertThat(metrics).isNotEmpty();
 
-        int count = 0;
-        MetricDataResult metricData;
-        do {
-            Thread.sleep(5000);
-            metricData = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
-            if (count++ > 10) {
-                break;
-            }
-        } while (metricData.values().isEmpty());
+        final MetricDataResult[] metricData = new MetricDataResult[1];
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
+            assertThat(metricData[0].values()).isNotEmpty();
+        });
 
-        System.out.println(metricData.values());
-        System.out.println(metricData.timestamps());
-
-        assertThat(metricData.values()).isNotEmpty();
-        assertThat(metricData.values().get(0)).isEqualTo(1.0);
+        assertThat(metricData[0].values()).isNotEmpty();
+        assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
     }
 
     @NotNull
     private Predicate<Metric> metricHasDimension(String name, String value) {
         return metric -> metric.dimensions().stream().anyMatch(dimension ->
             dimension.name().equals(name) && dimension.value().equals(value));
-    }
-
-    private <Metric> Predicate<Metric> all(Predicate<Metric>... predicates) {
-        return Arrays.stream(predicates).reduce(Predicate::and).orElse(x -> true);
     }
 
     private Metric getMetricWhere(List<Metric> metrics, Predicate<Metric> metricPredicate) {

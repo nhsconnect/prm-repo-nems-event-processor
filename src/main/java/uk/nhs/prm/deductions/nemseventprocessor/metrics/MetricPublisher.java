@@ -25,18 +25,7 @@ public class MetricPublisher {
         this.config = config;
     }
 
-    void publish(MetricDatum datum) {
-        PutMetricDataRequest request =
-                PutMetricDataRequest
-                        .builder()
-                        .namespace("NemsEventProcessor")
-                        .metricData(datum)
-                        .build();
-
-        cloudWatchClient.putMetricData(request);
-    }
-
-    void publishMetric(Double healthValue, String metricName) {
+    public void publishMetric(String metricName, Double healthValue) {
         ArrayList<Dimension> dimensions = new ArrayList<>();
         dimensions.add(Dimension
                 .builder()
@@ -53,6 +42,17 @@ public class MetricPublisher {
                 .build();
 
         publish(datum);
+    }
+
+    private void publish(MetricDatum datum) {
+        PutMetricDataRequest request =
+                PutMetricDataRequest
+                        .builder()
+                        .namespace("NemsEventProcessor")
+                        .metricData(datum)
+                        .build();
+
+        cloudWatchClient.putMetricData(request);
     }
 
     // why? here's why: https://forums.aws.amazon.com/thread.jspa?threadID=328321
