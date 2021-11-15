@@ -41,7 +41,7 @@ class HealthMetricPublicationTest {
         assertThat(metrics).isNotEmpty();
 
         final MetricDataResult[] metricData = new MetricDataResult[1];
-        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
             metricData[0] = fetchRecentMetricData(2, getMetricWhere(metrics, metricHasDimension("Environment", "ci")));
             assertThat(metricData[0].values()).isNotEmpty();
         });
