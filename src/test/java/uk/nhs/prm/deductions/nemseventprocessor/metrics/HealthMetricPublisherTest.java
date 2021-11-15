@@ -31,7 +31,8 @@ class HealthMetricPublisherTest {
 
         when(config.environment()).thenReturn("performance");
 
-        new HealthMetricPublisher(metricsClient, config).publishHealthyStatus();
+        MetricPublisher metricPublisher = new MetricPublisher(metricsClient, config);
+        new HealthMetricPublisher(config, metricPublisher).publishHealthyStatus();
 
         verify(metricsClient).putMetricData(putRequestCaptor.capture());
         Dimension environmentDimension = putRequestCaptor.getValue().metricData().get(0).dimensions().get(0);

@@ -31,8 +31,8 @@ class HealthMetricPublicationTest {
     void shouldPutHealthMetricDataIntoCloudWatch() throws InterruptedException {
 
         AppConfig config = new AppConfig("ci", 1.0);
-
-        HealthMetricPublisher publisher = new HealthMetricPublisher(cloudWatchClient, config);
+        MetricPublisher metricPublisher = new MetricPublisher(cloudWatchClient, config);
+        HealthMetricPublisher publisher = new HealthMetricPublisher(config, metricPublisher);
 
         publisher.publishHealthyStatus();
 
