@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "sqs_nems_events_ecs_task" {
       "sqs:ReceiveMessage"
     ]
     resources = [
-      aws_sqs_queue.nems_events.arn,
+      aws_sqs_queue.incoming_nems_events.arn
     ]
   }
 }
