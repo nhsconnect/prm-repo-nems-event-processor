@@ -15,7 +15,7 @@ public class SqsHealthProbe {
         this.config = config;
     }
 
-    public boolean youHealthyYeah() {
+    public boolean isHealthy() {
         try {
             SqsClient sqsClient = SqsClient.create();
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName()).build()).queueUrl();

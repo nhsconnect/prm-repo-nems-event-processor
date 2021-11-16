@@ -16,7 +16,7 @@ class HealthMetricPublisherTest {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
 
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
-        when(sqsHealthProbe.youHealthyYeah()).thenReturn(false);
+        when(sqsHealthProbe.isHealthy()).thenReturn(false);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, sqsHealthProbe);
         healthPublisher.publishHealthStatus();
@@ -29,7 +29,7 @@ class HealthMetricPublisherTest {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
 
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
-        when(sqsHealthProbe.youHealthyYeah()).thenReturn(true);
+        when(sqsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, sqsHealthProbe);
         healthPublisher.publishHealthStatus();

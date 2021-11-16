@@ -14,7 +14,7 @@ public class SqsHealthProbeTest {
         AppConfig config = new AppConfig("int-test", "non-existent-queue");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
-        assertFalse(sqsHealthProbe.youHealthyYeah());
+        assertFalse(sqsHealthProbe.isHealthy());
     }
 
     @Test
@@ -25,6 +25,6 @@ public class SqsHealthProbeTest {
         AppConfig config = new AppConfig("int-test", queueName);
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
-        assertTrue(sqsHealthProbe.youHealthyYeah());
+        assertTrue(sqsHealthProbe.isHealthy());
     }
 }

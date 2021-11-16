@@ -24,7 +24,7 @@ public class HealthMetricPublisher {
 
     @Scheduled(fixedRate = MINUTE_INTERVAL)
     public void publishHealthStatus() {
-        if (sqsHealthProbe.youHealthyYeah()) {
+        if (sqsHealthProbe.isHealthy()) {
             metricPublisher.publishMetric(HEALTH_METRIC_NAME, 1.0);
         }
         else {
