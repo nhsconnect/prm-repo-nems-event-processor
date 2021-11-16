@@ -10,7 +10,7 @@ public class AppConfig {
     private final String environment;
     private final String incomingQueueName;
 
-    public AppConfig(@Value("${environment}") String environment, @Value("${nemsEventsQueueName}") String incomingQueueName) {
+    public AppConfig(@Value("${environment}") String environment, @Value("${aws.nemsEventsQueueName}") String incomingQueueName) {
         this.environment = environment;
         this.incomingQueueName = incomingQueueName;
     }
