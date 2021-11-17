@@ -8,13 +8,13 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 
 @Component
 @Slf4j
-public class SqsHealthProbe {
+public class SqsHealthProbe implements HealthProbe{
     private final AppConfig config;
-
     public SqsHealthProbe(AppConfig config) {
         this.config = config;
     }
 
+    @Override
     public boolean isHealthy() {
         try {
             SqsClient sqsClient = SqsClient.create();
