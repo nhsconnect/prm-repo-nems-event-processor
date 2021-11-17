@@ -5,36 +5,45 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class HealthMetricPublisherTest {
 
     @Test
-    public void shouldSetHealthMetricToZeroForUnhealthyIfSqsConnectionIsUnhealthy() {
+    public void shouldSetHealthMetricToZeroForUnhealthyIfConnectionIsUnhealthy() {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
-
+        List<HealthProbe> probe = new ArrayList<>();
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
+        SnsHealthProbe snsHealthProbe = Mockito.mock(SnsHealthProbe.class);
+        probe.add(sqsHealthProbe);
+        probe.add(snsHealthProbe);
         when(sqsHealthProbe.isHealthy()).thenReturn(false);
+        when(snsHealthProbe.isHealthy()).thenReturn(false);
 
-        HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, sqsHealthProbe);
+        HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher,probe);
         healthPublisher.publishHealthStatus();
 
-        verify(metricPublisher).publishMetric("Health", 0.0);
+        verify(metricPublisher,times(2)).publishMetric("Health", 0.0);
     }
 
     @Test
-    public void shouldSetHealthMetricToOneIfSqsConnectionIsHealthy() {
+    public void shouldSetHealthMetricToOneIfConnectionIsHealthy() {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
-
+        List<HealthProbe> probe = new ArrayList<>();
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
+        SnsHealthProbe snsHealthProbe = Mockito.mock(SnsHealthProbe.class);
+        probe.add(sqsHealthProbe);
+        probe.add(snsHealthProbe);
         when(sqsHealthProbe.isHealthy()).thenReturn(true);
+        when(snsHealthProbe.isHealthy()).thenReturn(true);
 
-        HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, sqsHealthProbe);
+        HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, probe);
         healthPublisher.publishHealthStatus();
-
-        verify(metricPublisher).publishMetric("Health", 1.0);
+        verify(metricPublisher,times(2)).publishMetric("Health", 1.0);
     }
 
 }

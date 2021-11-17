@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Slf4j
 public class HealthMetricPublisher {
@@ -12,23 +14,24 @@ public class HealthMetricPublisher {
     private static final int SECONDS = 1000;
     private static final int MINUTE_INTERVAL = 60 * SECONDS;
     public static final String HEALTH_METRIC_NAME = "Health";
-
-    private SqsHealthProbe sqsHealthProbe;
+    List<HealthProbe> allHealthProbes;
     private final MetricPublisher metricPublisher;
 
     @Autowired
-    public HealthMetricPublisher(MetricPublisher metricPublisher, SqsHealthProbe sqsHealthProbe) {
+    public HealthMetricPublisher(MetricPublisher metricPublisher, List<HealthProbe> allHealthProbes) {
         this.metricPublisher = metricPublisher;
-        this.sqsHealthProbe = sqsHealthProbe;
+        this.allHealthProbes = allHealthProbes;
     }
+
 
     @Scheduled(fixedRate = MINUTE_INTERVAL)
     public void publishHealthStatus() {
-        if (sqsHealthProbe.isHealthy()) {
-            metricPublisher.publishMetric(HEALTH_METRIC_NAME, 1.0);
-        }
-        else {
-            metricPublisher.publishMetric(HEALTH_METRIC_NAME, 0.0);
-        }
+        allHealthProbes.forEach(healthProbe -> {
+            if (healthProbe.isHealthy()) {
+                metricPublisher.publishMetric(HEALTH_METRIC_NAME, 1.0);
+            } else {
+                metricPublisher.publishMetric(HEALTH_METRIC_NAME, 0.0);
+            }
+        });
     }
 }
