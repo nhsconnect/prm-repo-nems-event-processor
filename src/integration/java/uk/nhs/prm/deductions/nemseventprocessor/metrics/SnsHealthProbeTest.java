@@ -21,14 +21,23 @@ class SnsHealthProbeTest {
 
     @Test
     void shouldReturnHealthyIfCanQuerySnsTopic() {
-        String snsTopicName = "sns-topic-health-probe";
-        CreateTopicResponse topic = SnsClient.create().createTopic(CreateTopicRequest.builder().name(snsTopicName).build());
+        CreateTopicResponse topic = setUpTopic();
 
         AppConfig config = new AppConfig("int-test", "non-existent-queue",topic.topicArn());
         SnsHealthProbe snsHealthProbe = new SnsHealthProbe(config);
 
         assertTrue(snsHealthProbe.isHealthy());
 
+        tearDown(topic);
+    }
+
+    private CreateTopicResponse setUpTopic() {
+        String snsTopicName = "sns-topic-health-probe";
+        CreateTopicResponse topic = SnsClient.create().createTopic(CreateTopicRequest.builder().name(snsTopicName).build());
+        return topic;
+    }
+
+    private void tearDown(CreateTopicResponse topic) {
         SnsClient.create().deleteTopic(DeleteTopicRequest.builder().topicArn(topic.topicArn()).build());
     }
 

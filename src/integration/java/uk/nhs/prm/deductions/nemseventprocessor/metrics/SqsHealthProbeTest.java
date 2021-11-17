@@ -21,14 +21,21 @@ public class SqsHealthProbeTest {
 
     @Test
     void shouldReturnHealthyIfCanQuerySqsQueue() {
-        String queueName = "sqs-health-probe-queue";
-        CreateQueueResponse queue = SqsClient.create().createQueue(CreateQueueRequest.builder().queueName(queueName).build());
+        CreateQueueResponse queue = setUpQueue("sqs-health-probe-queue");
 
-        AppConfig config = new AppConfig("int-test", queueName,"non-existent-sns-topic");
+        AppConfig config = new AppConfig("int-test", "sqs-health-probe-queue","non-existent-sns-topic");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
         assertTrue(sqsHealthProbe.isHealthy());
 
+        tearDown(queue);
+    }
+
+    private CreateQueueResponse setUpQueue(String queueName) {
+        return SqsClient.create().createQueue(CreateQueueRequest.builder().queueName(queueName).build());
+    }
+
+    private void tearDown(CreateQueueResponse queue) {
         SqsClient.create().deleteQueue(DeleteQueueRequest.builder().queueUrl(queue.queueUrl()).build());
     }
 }
