@@ -9,10 +9,12 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 public class AppConfig {
     private final String environment;
     private final String incomingQueueName;
+    private final String unhandledEventsSnsTopicArn;
 
-    public AppConfig(@Value("${environment}") String environment, @Value("${aws.nemsEventsQueueName}") String incomingQueueName) {
+    public AppConfig(@Value("${environment}") String environment, @Value("${aws.nemsEventsQueueName}") String incomingQueueName, @Value("${aws.unhandledEventsSnsTopicArn}") String unhandledEventsSnsTopicArn) {
         this.environment = environment;
         this.incomingQueueName = incomingQueueName;
+        this.unhandledEventsSnsTopicArn = unhandledEventsSnsTopicArn;
     }
 
     public String environment() {
@@ -21,6 +23,10 @@ public class AppConfig {
 
     public String incomingQueueName() {
         return incomingQueueName;
+    }
+
+    public String unhandledEventsSnsTopicArn() {
+        return unhandledEventsSnsTopicArn;
     }
 
     @Bean

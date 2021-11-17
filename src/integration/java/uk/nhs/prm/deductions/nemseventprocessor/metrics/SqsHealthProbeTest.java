@@ -11,7 +11,7 @@ public class SqsHealthProbeTest {
 
     @Test
     void shouldReturnUnhealthyIfCannotQuerySqsQueue() {
-        AppConfig config = new AppConfig("int-test", "non-existent-queue");
+        AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
         assertFalse(sqsHealthProbe.isHealthy());
@@ -22,7 +22,7 @@ public class SqsHealthProbeTest {
         String queueName = "sqs-health-probe-queue";
         SqsClient.create().createQueue(CreateQueueRequest.builder().queueName(queueName).build());
 
-        AppConfig config = new AppConfig("int-test", queueName);
+        AppConfig config = new AppConfig("int-test", queueName,"non-existent-sns-topic");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
         assertTrue(sqsHealthProbe.isHealthy());
