@@ -5,17 +5,18 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 import software.amazon.awssdk.services.sns.model.DeleteTopicRequest;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes.UnhandledSnsHealthProbe;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SnsHealthProbeTest {
+class UnhandledSnsHealthProbeTest {
     @Test
     void shouldReturnUnhealthyIfCannotQuerySnsTopic() {
-        AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic");
-        SnsHealthProbe snsHealthProbe = new SnsHealthProbe(config);
+        AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic", "suspension-non-existent");
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config);
 
-        assertFalse(snsHealthProbe.isHealthy());
+        assertFalse(unhandledSnsHealthProbe.isHealthy());
     }
 
 
@@ -23,10 +24,10 @@ class SnsHealthProbeTest {
     void shouldReturnHealthyIfCanQuerySnsTopic() {
         CreateTopicResponse topic = setUpTopic();
 
-        AppConfig config = new AppConfig("int-test", "non-existent-queue",topic.topicArn());
-        SnsHealthProbe snsHealthProbe = new SnsHealthProbe(config);
+        AppConfig config = new AppConfig("int-test", "non-existent-queue",topic.topicArn(), "suspension-non-existent");
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config);
 
-        assertTrue(snsHealthProbe.isHealthy());
+        assertTrue(unhandledSnsHealthProbe.isHealthy());
 
         tearDown(topic);
     }

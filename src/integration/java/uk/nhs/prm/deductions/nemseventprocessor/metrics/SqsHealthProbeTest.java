@@ -5,6 +5,7 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.awssdk.services.sqs.model.CreateQueueResponse;
 import software.amazon.awssdk.services.sqs.model.DeleteQueueRequest;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes.SqsHealthProbe;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,7 +14,7 @@ public class SqsHealthProbeTest {
 
     @Test
     void shouldReturnUnhealthyIfCannotQuerySqsQueue() {
-        AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic");
+        AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic", "suspension-non-existent");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
         assertFalse(sqsHealthProbe.isHealthy());
@@ -23,7 +24,7 @@ public class SqsHealthProbeTest {
     void shouldReturnHealthyIfCanQuerySqsQueue() {
         CreateQueueResponse queue = setUpQueue("sqs-health-probe-queue");
 
-        AppConfig config = new AppConfig("int-test", "sqs-health-probe-queue","non-existent-sns-topic");
+        AppConfig config = new AppConfig("int-test", "sqs-health-probe-queue","non-existent-sns-topic", "suspension-non-existent");
         SqsHealthProbe sqsHealthProbe = new SqsHealthProbe(config);
 
         assertTrue(sqsHealthProbe.isHealthy());

@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes.HealthProbe;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes.SqsHealthProbe;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes.UnhandledSnsHealthProbe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +21,11 @@ class HealthMetricPublisherTest {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
         List<HealthProbe> probe = new ArrayList<>();
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
-        SnsHealthProbe snsHealthProbe = Mockito.mock(SnsHealthProbe.class);
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = Mockito.mock(UnhandledSnsHealthProbe.class);
         probe.add(sqsHealthProbe);
-        probe.add(snsHealthProbe);
+        probe.add(unhandledSnsHealthProbe);
         when(sqsHealthProbe.isHealthy()).thenReturn(false);
-        when(snsHealthProbe.isHealthy()).thenReturn(false);
+        when(unhandledSnsHealthProbe.isHealthy()).thenReturn(false);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher,probe);
         healthPublisher.publishHealthStatus();
@@ -35,11 +38,11 @@ class HealthMetricPublisherTest {
         MetricPublisher metricPublisher = Mockito.mock(MetricPublisher.class);
         List<HealthProbe> probe = new ArrayList<>();
         SqsHealthProbe sqsHealthProbe = Mockito.mock(SqsHealthProbe.class);
-        SnsHealthProbe snsHealthProbe = Mockito.mock(SnsHealthProbe.class);
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = Mockito.mock(UnhandledSnsHealthProbe.class);
         probe.add(sqsHealthProbe);
-        probe.add(snsHealthProbe);
+        probe.add(unhandledSnsHealthProbe);
         when(sqsHealthProbe.isHealthy()).thenReturn(true);
-        when(snsHealthProbe.isHealthy()).thenReturn(true);
+        when(unhandledSnsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, probe);
         healthPublisher.publishHealthStatus();

@@ -1,14 +1,15 @@
-package uk.nhs.prm.deductions.nemseventprocessor.metrics;
+package uk.nhs.prm.deductions.nemseventprocessor.metrics.healthprobes;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
+import uk.nhs.prm.deductions.nemseventprocessor.metrics.AppConfig;
 
 @Component
 @Slf4j
-public class SqsHealthProbe implements HealthProbe{
+public class SqsHealthProbe implements HealthProbe {
     private final AppConfig config;
     public SqsHealthProbe(AppConfig config) {
         this.config = config;
