@@ -35,26 +35,24 @@ private List<HealthProbe> probe = new ArrayList<>();
     }
 
     @Test
-    public void shouldSetHealthMetricToZeroForUnhealthyIfConnectionIsUnhealthy() {
+    public void shouldSetHealthMetricToZeroForUnhealthyIfAnyConnectionIsUnhealthy() {
         when(sqsHealthProbe.isHealthy()).thenReturn(false);
-        when(unhandledSnsHealthProbe.isHealthy()).thenReturn(false);
-        when(suspensionsSnsHealthProbe.isHealthy()).thenReturn(false);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher,probe);
         healthPublisher.publishHealthStatus();
 
-        verify(metricPublisher,times(3)).publishMetric("Health", 0.0);
+        verify(metricPublisher,times(1)).publishMetric("Health", 0.0);
     }
 
     @Test
-    public void shouldSetHealthMetricToOneIfConnectionIsHealthy() {
+    public void shouldSetHealthMetricToOneIfAllConnectionsAreHealthy() {
         when(sqsHealthProbe.isHealthy()).thenReturn(true);
         when(unhandledSnsHealthProbe.isHealthy()).thenReturn(true);
         when(suspensionsSnsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthMetricPublisher healthPublisher = new HealthMetricPublisher(metricPublisher, probe);
         healthPublisher.publishHealthStatus();
-        verify(metricPublisher,times(3)).publishMetric("Health", 1.0);
+        verify(metricPublisher,times(1)).publishMetric("Health", 1.0);
     }
 
 }

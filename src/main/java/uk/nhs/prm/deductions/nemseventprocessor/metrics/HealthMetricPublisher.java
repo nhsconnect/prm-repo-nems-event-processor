@@ -27,12 +27,21 @@ public class HealthMetricPublisher {
 
     @Scheduled(fixedRate = MINUTE_INTERVAL)
     public void publishHealthStatus() {
-        allHealthProbes.forEach(healthProbe -> {
-            if (healthProbe.isHealthy()) {
-                metricPublisher.publishMetric(HEALTH_METRIC_NAME, 1.0);
-            } else {
-                metricPublisher.publishMetric(HEALTH_METRIC_NAME, 0.0);
+        if (allProbesHealthy()) {
+            metricPublisher.publishMetric(HEALTH_METRIC_NAME, 1.0);
+        } else {
+            metricPublisher.publishMetric(HEALTH_METRIC_NAME, 0.0);
+        }
+    }
+
+    private boolean allProbesHealthy() {
+        boolean allProbesHealthy = true;
+        for (HealthProbe healthProbe : allHealthProbes) {
+            if (!healthProbe.isHealthy()) {
+                allProbesHealthy = false;
+                break;
             }
-        });
+        }
+        return allProbesHealthy;
     }
 }
