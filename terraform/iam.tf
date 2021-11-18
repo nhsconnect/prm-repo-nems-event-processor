@@ -80,7 +80,8 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
     actions = [
-      "sns:Publish"
+      "sns:Publish",
+      "sns:GetTopicAttributes"
     ]
     resources = [
       aws_sns_topic.unhandled_events.arn,
