@@ -27,29 +27,22 @@ class NemsEventListenerMessageTracingTest {
     @Mock
     private NemsEventService nemsEventService;
 
-    @InjectMocks
-    private NemsEventListener nemsEventListener;
-
     @Test
     void shouldAddTraceIdToLoggingContextWhenReceivesMessage() throws JMSException {
+        var nemsEventListener = new NemsEventListener(nemsEventService, new Tracer());
+        var testLogAppender = addTestLogAppender();
 
-        Tracer tracer = new Tracer();
-        nemsEventListener = new NemsEventListener(nemsEventService, tracer);
-        TestLogAppender testLogAppender = addTestLogAppender();
+        nemsEventListener.onMessage(new SQSTextMessage("payload"));
 
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
-
-        nemsEventListener.onMessage(message);
-
-        var receivedMessageLogEvent = testLogAppender.hasLoggedEvent("RECEIVED");
-        assertTrue(receivedMessageLogEvent);
+        var receivedMessageLogEvent = testLogAppender.findLoggedEvent("RECEIVED");
+        assertNotNull(receivedMessageLogEvent);
+        assertTrue(receivedMessageLogEvent.getMDCPropertyMap().containsKey("traceId"));
     }
 
     @NotNull
     private TestLogAppender addTestLogAppender() {
-        TestLogAppender testLogAppender = new TestLogAppender();
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        var testLogAppender = new TestLogAppender();
+        var logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.addAppender(testLogAppender);
 
         testLogAppender.start();
@@ -57,19 +50,20 @@ class NemsEventListenerMessageTracingTest {
     }
 }
 
-    class TestLogAppender extends AppenderBase<ILoggingEvent> {
-        ArrayList<ILoggingEvent> loggingEvents = new ArrayList<>();
+class TestLogAppender extends AppenderBase<ILoggingEvent> {
+    ArrayList<ILoggingEvent> loggingEvents = new ArrayList<>();
 
-        @Override
-        protected void append(ILoggingEvent eventObject) {
-            loggingEvents.add(eventObject);
-        }
+    @Override
+    protected void append(ILoggingEvent eventObject) {
+        loggingEvents.add(eventObject);
+    }
 
-        boolean hasLoggedEvent(String subString) {
-            if (loggingEvents.isEmpty()) return false;
-            for(ILoggingEvent event:loggingEvents){
-               if(event.getMessage().contains(subString)) {return true;}
-            }
-            return false;
+    ILoggingEvent findLoggedEvent(String subString) {
+        for (ILoggingEvent event: loggingEvents) {
+           if (event.getMessage().contains(subString)) {
+               return event;
+           }
         }
+        return null;
+    }
 }

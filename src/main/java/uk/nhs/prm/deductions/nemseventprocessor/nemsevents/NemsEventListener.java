@@ -17,8 +17,8 @@ public class NemsEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        log.info("RECEIVED: Nems Event Message");
         tracer.startMessageTrace();
+        log.info("RECEIVED: Nems Event Message");
         try {
             String payload = ((TextMessage) message).getText();
             nemsEventService.processNemsEvent(payload);
