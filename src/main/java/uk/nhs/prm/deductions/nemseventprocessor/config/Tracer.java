@@ -10,17 +10,15 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Tracer {
 
-    public String createTraceId() {
+    public String startMessageTrace() {
         String traceIdUUID = UUID.randomUUID().toString();
         String traceIdHex = traceIdUUID.replaceAll("-", "");
+        MDC.put("traceId", traceIdHex);
         return traceIdHex;
-    }
-
-    public void setTraceId(String traceId) {
-        MDC.put("traceId", traceId);
     }
 
     public String getTraceId() {
         return MDC.get("traceId");
     }
+
 }

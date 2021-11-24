@@ -26,6 +26,7 @@ class NemsEventListenerTest {
 
     @Mock
     private NemsEventService nemsEventService;
+
     @Mock
     private Tracer tracer;
 
@@ -67,44 +68,4 @@ class NemsEventListenerTest {
         verify(message, never()).acknowledge();
     }
 
-    @Test
-    void shouldAddTraceIdToLoggingContextWhenReceivesMessage() throws JMSException {
-        TestLogAppender testLogAppender = addTestLogAppender();
-        when(tracer.createTraceId()).thenReturn("test-trace-id");
-        doCallRealMethod().when(tracer).setTraceId("test-trace-id");
-
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
-
-        nemsEventListener.onMessage(message);
-
-        ILoggingEvent lastLoggedEvent = testLogAppender.getLastLoggedEvent();
-        verify(tracer).setTraceId(tracer.createTraceId());
-        assertNotNull(lastLoggedEvent);
-        assertTrue(lastLoggedEvent.getMDCPropertyMap().containsKey("traceId"));
-    }
-
-    @NotNull
-    private TestLogAppender addTestLogAppender() {
-        TestLogAppender testLogAppender = new TestLogAppender();
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.addAppender(testLogAppender);
-
-        testLogAppender.start();
-        return testLogAppender;
-    }
-}
-
-class TestLogAppender extends AppenderBase<ILoggingEvent> {
-    ArrayList<ILoggingEvent> loggingEvents = new ArrayList<>();
-
-    @Override
-    protected void append(ILoggingEvent eventObject) {
-        loggingEvents.add(eventObject);
-    }
-
-    ILoggingEvent getLastLoggedEvent() {
-        if (loggingEvents.isEmpty()) return null;
-        return loggingEvents.get(loggingEvents.size() - 1);
-    }
 }
