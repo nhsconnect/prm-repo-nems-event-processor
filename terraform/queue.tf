@@ -120,7 +120,7 @@ data "aws_iam_policy_document" "unhandled_events_sns_topic_access_to_queue" {
 
 resource "aws_sns_topic" "suspensions" {
   name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
-  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+  kms_master_key_id = aws_kms_key.suspensions.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
