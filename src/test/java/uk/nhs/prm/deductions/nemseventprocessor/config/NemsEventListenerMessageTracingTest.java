@@ -7,7 +7,6 @@ import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
@@ -15,11 +14,10 @@ import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventListener;
 import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventService;
 
 import javax.jms.JMSException;
-
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class NemsEventListenerMessageTracingTest {
@@ -28,15 +26,23 @@ class NemsEventListenerMessageTracingTest {
     private NemsEventService nemsEventService;
 
     @Test
-    void shouldAddTraceIdToLoggingContextWhenReceivesMessage() throws JMSException {
+    void shouldAddOriginalMessageIdAndTraceIdToLoggingContextWhenReceivesMessage() throws JMSException {
         var nemsEventListener = new NemsEventListener(nemsEventService, new Tracer());
         var testLogAppender = addTestLogAppender();
 
-        nemsEventListener.onMessage(new SQSTextMessage("payload"));
+        SQSTextMessage meshOriginatedMessage = new SQSTextMessage("payload");
+        meshOriginatedMessage.setObjectProperty("meshMessageId", "foo");
+        nemsEventListener.onMessage(meshOriginatedMessage);
 
-        var receivedMessageLogEvent = testLogAppender.findLoggedEvent("RECEIVED");
-        assertNotNull(receivedMessageLogEvent);
-        assertTrue(receivedMessageLogEvent.getMDCPropertyMap().containsKey("traceId"));
+        var receivedLogEventProperties = testLogAppender.findLoggedEvent("RECEIVED").getMDCPropertyMap();
+        assertTrue(receivedLogEventProperties.containsKey("traceId"));
+        assertThat(receivedLogEventProperties.get("meshMessageId")).isEqualTo("foo");
+    }
+
+    @Test
+    void shouldNotThrowIfOriginalMessageIdIsNotProvided() throws JMSException {
+        var nemsEventListener = new NemsEventListener(nemsEventService, new Tracer());
+        nemsEventListener.onMessage(new SQSTextMessage("payload"));
     }
 
     @NotNull

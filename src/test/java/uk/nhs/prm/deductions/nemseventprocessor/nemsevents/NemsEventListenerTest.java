@@ -1,24 +1,16 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.LoggerFactory;
 import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 
 import javax.jms.JMSException;
-import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,14 +38,14 @@ class NemsEventListenerTest {
     @Test
     @SuppressFBWarnings
     void shouldNotAcknowledgeOrProcessMessageIfJMSReceivingFails() throws JMSException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
         doThrow(new JMSException("error")).when(message).getText();
 
         nemsEventListener.onMessage(message);
+
         verifyNoInteractions(nemsEventService);
-        verifyNoMoreInteractions(message);
+        verify(message, never()).acknowledge();
     }
 
     @Test

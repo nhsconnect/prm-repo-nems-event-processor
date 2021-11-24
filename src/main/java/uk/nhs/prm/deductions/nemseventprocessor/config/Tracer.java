@@ -10,10 +10,11 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Tracer {
 
-    public String startMessageTrace() {
+    public String startMessageTrace(String originalMessageId) {
         String traceIdUUID = UUID.randomUUID().toString();
         String traceIdHex = traceIdUUID.replaceAll("-", "");
         MDC.put("traceId", traceIdHex);
+        MDC.put("meshMessageId", originalMessageId);
         return traceIdHex;
     }
 
