@@ -8,6 +8,8 @@ import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+import java.util.Collection;
+import java.util.Collections;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,11 +25,15 @@ public class NemsEventListener implements MessageListener {
         if (message != null) {
             var meshMessageIdFromString = message.getStringProperty(meshMessageId);
             var meshMessageIdFromObject = message.getObjectProperty(meshMessageId);
+            var propertyNames = message.getPropertyNames();
             log.info(message.getClass().getName());
             log.info(meshMessageIdFromString);
             log.info("" + meshMessageIdFromObject);
             if (meshMessageIdFromObject != null) {
                 log.info(meshMessageIdFromObject.getClass().getName());
+            }
+            for (var propertyName: Collections.list(propertyNames)){
+                log.info("" + propertyName);
             }
         }
 

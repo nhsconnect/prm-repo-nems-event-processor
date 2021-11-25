@@ -50,22 +50,7 @@ pipelines:
                     arguments:
                       - -c
                       - ./tasks test_coverage
-            code_quality:
-              artifacts:
-                - build:
-                    source: build/reports/spotbugs
-              tabs:
-                MainCodeQa: spotbugs/main/spotbugs.html
-                TestCodeQa: spotbugs/test/spotbugs.html
-                ITestCodeQa: spotbugs/integration/spotbugs.html
-              resources:
-                - docker
-              tasks:
-                - exec:
-                    command: /bin/bash
-                    arguments:
-                      - -c
-                      - ./tasks code_quality
+
       - docker:
           clean_workspace: true
           jobs:
