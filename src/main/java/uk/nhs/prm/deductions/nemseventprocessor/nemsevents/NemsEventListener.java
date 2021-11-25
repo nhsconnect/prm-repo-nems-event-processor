@@ -19,7 +19,19 @@ public class NemsEventListener implements MessageListener {
     @SneakyThrows
     @Override
     public void onMessage(Message message) {
-        tracer.startMessageTrace(message.getStringProperty("meshMessageId"));
+        var meshMessageId = "meshMessageId";
+        if (message != null) {
+            var meshMessageIdFromString = message.getStringProperty(meshMessageId);
+            var meshMessageIdFromObject = message.getObjectProperty(meshMessageId);
+            log.info(message.getClass().getName());
+            log.info(meshMessageIdFromString);
+            log.info("" + meshMessageIdFromObject);
+            if (meshMessageIdFromObject != null) {
+                log.info(meshMessageIdFromObject.getClass().getName());
+            }
+        }
+
+        tracer.startMessageTrace(message.getStringProperty(meshMessageId));
         log.info("RECEIVED: Nems Event Message");
         try {
             String payload = ((TextMessage) message).getText();
