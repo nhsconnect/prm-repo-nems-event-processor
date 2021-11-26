@@ -130,6 +130,12 @@ resource "aws_sns_topic" "suspensions" {
   }
 }
 
+resource "aws_ssm_parameter" "suspensions_sns_topic" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/suspensions-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.suspensions.arn
+}
+
 resource "aws_sqs_queue" "suspensions_observability" {
   name                       = "${var.environment}-${var.component_name}-suspensions-observability-queue"
   message_retention_seconds  = 1800
@@ -168,7 +174,8 @@ data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.suspensions_observability.arn
+      aws_sqs_queue.suspensions_observability.arn,
+      data.aws_ssm_parameter.suspensions_queue_arn.value
     ]
 
     condition {
