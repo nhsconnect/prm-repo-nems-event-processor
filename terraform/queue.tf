@@ -174,8 +174,7 @@ data "aws_iam_policy_document" "suspensions_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.suspensions_observability.arn,
-      data.aws_ssm_parameter.suspensions_queue_arn.value
+      aws_sqs_queue.suspensions_observability.arn
     ]
 
     condition {

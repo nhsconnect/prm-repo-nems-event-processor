@@ -23,7 +23,3 @@ data "aws_ssm_parameter" "sns_sqs_kms_key_id" {
 data "aws_ssm_parameter" "nems_events_topic_arn" {
   name = "/repo/${var.environment}/output/prm-deductions-mesh-forwarder/nems-events-topic-arn"
 }
-
-data "aws_ssm_parameter" "suspensions_queue_arn" {
-  name = "/repo/${var.environment}/output/suspension-service/suspensions-queue-arn"
-}
