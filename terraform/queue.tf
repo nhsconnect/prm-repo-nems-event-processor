@@ -233,3 +233,71 @@ resource "aws_iam_role_policy_attachment" "sns_failure_feedback_policy_attachmen
   role       = aws_iam_role.sns_failure_feedback_role.name
   policy_arn = aws_iam_policy.sns_failure_feedback_policy.arn
 }
+
+# Dead Letter Queue
+resource "aws_sns_topic" "dead_letter_queue" {
+  name = "${var.environment}-${var.component_name}-dead-letter-queue-sns-topic"
+  kms_master_key_id = aws_kms_key.dead_letter_queue.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-dead-letter-queue-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_ssm_parameter" "dead_letter_queue_sns_topic" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/dlq-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.dead_letter_queue.arn
+}
+
+resource "aws_sqs_queue" "dead_letter_queue_observability" {
+  name                       = "${var.environment}-${var.component_name}-dlq-observability-queue"
+  message_retention_seconds  = 1800
+  kms_master_key_id = aws_ssm_parameter.dead_letter_queue_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-dlq-observability-queue"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "dead_letter_queue_events_to_observability_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.dead_letter_queue.arn
+  endpoint             = aws_sqs_queue.dead_letter_queue_observability.arn
+}
+
+resource "aws_sqs_queue_policy" "dead_letter_queue_subscription" {
+  queue_url = aws_sqs_queue.dead_letter_queue_observability.id
+  policy    = data.aws_iam_policy_document.dead_letter_queue_sns_topic_access_to_queue.json
+}
+
+data "aws_iam_policy_document" "dead_letter_queue_sns_topic_access_to_queue" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.dead_letter_queue_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.dead_letter_queue.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
