@@ -1,11 +1,13 @@
-package uk.nhs.prm.deductions.nemseventprocessor.config;
+package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@ComponentScan("uk.nhs.prm.deductions.nemseventprocessor.metrics")
+@ComponentScan(excludeFilters =
+@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HealthMetricPublisher.class))
 public class ScheduledConfig {
 }

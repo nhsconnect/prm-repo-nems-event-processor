@@ -11,7 +11,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
-import uk.nhs.prm.deductions.nemseventprocessor.config.ScheduledConfig;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -28,17 +27,17 @@ import static org.awaitility.Awaitility.await;
 @SpringJUnitConfig(ScheduledConfig.class)
 @TestPropertySource(properties = {"environment = ci"})
 @ExtendWith(MockitoExtension.class)
-class HealthMetricPublicationTest {
+class MetricPublisherTest {
 
     @Autowired
-    private HealthMetricPublisher publisher;
+    private MetricPublisher publisher;
 
     CloudWatchClient cloudWatchClient = CloudWatchClient.create();
     static final double HEALTHY_HEALTH_VALUE = 1.0;
 
     @Test
     void shouldPutHealthMetricDataIntoCloudWatch() {
-        publisher.publishHealthStatus();
+        publisher.publishMetric("Health", HEALTHY_HEALTH_VALUE);
 
         List<Metric> metrics = fetchMetricsMatching("NemsEventProcessor", "Health");
         assertThat(metrics).isNotEmpty();
@@ -50,8 +49,7 @@ class HealthMetricPublicationTest {
         });
 
         assertThat(metricData[0].values()).isNotEmpty();
-        // TODO: #2423 - Check assertion below:
-//        assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
+        assertThat(metricData[0].values().get(0)).isEqualTo(HEALTHY_HEALTH_VALUE);
     }
 
     @NotNull
