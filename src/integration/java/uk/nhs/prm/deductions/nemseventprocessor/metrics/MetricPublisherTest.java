@@ -24,7 +24,7 @@ import static org.awaitility.Awaitility.await;
 
 @SpringBootTest()
 @ActiveProfiles("test")
-@SpringJUnitConfig(ScheduledConfig.class)
+@SpringJUnitConfig(ScheduledTestConfig.class)
 @TestPropertySource(properties = {"environment = ci"})
 @ExtendWith(MockitoExtension.class)
 class MetricPublisherTest {
