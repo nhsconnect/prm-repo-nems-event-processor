@@ -235,28 +235,28 @@ resource "aws_iam_role_policy_attachment" "sns_failure_feedback_policy_attachmen
 }
 
 # Dead Letter Queue
-resource "aws_sns_topic" "dead_letter_queue" {
-  name = "${var.environment}-${var.component_name}-dead-letter-queue-sns-topic"
-  kms_master_key_id = aws_kms_key.dead_letter_queue.id
+resource "aws_sns_topic" "dlq" {
+  name = "${var.environment}-${var.component_name}-dlq-sns-topic"
+  kms_master_key_id = aws_kms_key.dlq.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-dead-letter-queue-sns-topic"
+    Name = "${var.environment}-${var.component_name}-dlq-sns-topic"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_ssm_parameter" "dead_letter_queue_sns_topic" {
+resource "aws_ssm_parameter" "dlq_sns_topic" {
   name  = "/repo/${var.environment}/output/${var.component_name}/dlq-sns-topic-arn"
   type  = "String"
-  value = aws_sns_topic.dead_letter_queue.arn
+  value = aws_sns_topic.dlq.arn
 }
 
-resource "aws_sqs_queue" "dead_letter_queue" {
-  name                       = "${var.environment}-${var.component_name}-dlq-queue"
+resource "aws_sqs_queue" "dlq" {
+  name                       = "${var.environment}-${var.component_name}-dlq"
   message_retention_seconds  = 1800
-  kms_master_key_id = aws_ssm_parameter.dead_letter_queue_kms_key_id.value
+  kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
     Name = "${var.environment}-${var.component_name}-dlq-queue"
@@ -265,19 +265,19 @@ resource "aws_sqs_queue" "dead_letter_queue" {
   }
 }
 
-resource "aws_sns_topic_subscription" "dlq_sns_topic_to_dead_letter_queue" {
+resource "aws_sns_topic_subscription" "dlq_sns_topic_to_dlq" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.dead_letter_queue.arn
-  endpoint             = aws_sqs_queue.dead_letter_queue.arn
+  topic_arn            = aws_sns_topic.dlq.arn
+  endpoint             = aws_sqs_queue.dlq.arn
 }
 
-resource "aws_sqs_queue_policy" "dead_letter_queue_subscription" {
-  queue_url = aws_sqs_queue.dead_letter_queue.id
-  policy    = data.aws_iam_policy_document.dead_letter_queue_sns_topic_access_to_queue.json
+resource "aws_sqs_queue_policy" "dlq_subscription" {
+  queue_url = aws_sqs_queue.dlq.id
+  policy    = data.aws_iam_policy_document.dlq_sns_topic_access_to_queue.json
 }
 
-data "aws_iam_policy_document" "dead_letter_queue_sns_topic_access_to_queue" {
+data "aws_iam_policy_document" "dlq_sns_topic_access_to_queue" {
   statement {
     effect = "Allow"
 
@@ -291,12 +291,12 @@ data "aws_iam_policy_document" "dead_letter_queue_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.dead_letter_queue.arn
+      aws_sqs_queue.dlq.arn
     ]
 
     condition {
       test     = "ArnEquals"
-      values   = [aws_sns_topic.dead_letter_queue.arn]
+      values   = [aws_sns_topic.dlq.arn]
       variable = "aws:SourceArn"
     }
   }

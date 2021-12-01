@@ -71,9 +71,9 @@ resource "aws_ssm_parameter" "suspensions_kms_key_id" {
 }
 
 # Dead Letter Queue
-resource "aws_kms_key" "dead_letter_queue" {
+resource "aws_kms_key" "dlq" {
   description = "Custom KMS Key to enable server side encryption for dlq"
-  policy      = data.aws_iam_policy_document.dead_letter_queue_kms_key_policy_doc.json
+  policy      = data.aws_iam_policy_document.dlq_kms_key_policy_doc.json
 
   tags = {
     Name        = "${var.environment}-dlq-encryption-kms-key"
@@ -82,12 +82,12 @@ resource "aws_kms_key" "dead_letter_queue" {
   }
 }
 
-resource "aws_kms_alias" "dead_letter_queue_encryption" {
+resource "aws_kms_alias" "dlq_encryption" {
   name          = "alias/dlq-encryption-kms-key"
-  target_key_id = aws_kms_key.dead_letter_queue.id
+  target_key_id = aws_kms_key.dlq.id
 }
 
-data "aws_iam_policy_document" "dead_letter_queue_kms_key_policy_doc" {
+data "aws_iam_policy_document" "dlq_kms_key_policy_doc" {
   statement {
     effect = "Allow"
 
@@ -132,10 +132,10 @@ data "aws_iam_policy_document" "dead_letter_queue_kms_key_policy_doc" {
   }
 }
 
-resource "aws_ssm_parameter" "dead_letter_queue_kms_key_id" {
+resource "aws_ssm_parameter" "dlq_kms_key_id" {
   name  = "/repo/${var.environment}/output/${var.repo_name}/dlq-kms-key-id"
   type  = "String"
-  value = aws_kms_key.dead_letter_queue.id
+  value = aws_kms_key.dlq.id
 
   tags = {
     CreatedBy   = var.repo_name
