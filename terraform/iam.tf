@@ -85,7 +85,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     ]
     resources = [
       aws_sns_topic.unhandled_events.arn,
-      aws_sns_topic.suspensions.arn
+      aws_sns_topic.suspensions.arn,
+      aws_sns_topic.dead_letter_queue.arn
     ]
   }
 }
