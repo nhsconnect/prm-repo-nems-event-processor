@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
@@ -17,6 +18,7 @@ public class NemsEventService {
     private final UnhandledEventPublisher unhandledEventPublisher;
     private final NemsEventParser parser;
     private final SuspensionsEventPublisher suspensionsEventPublisher;
+    private final DeadLetterQueuePublisher deadLetterQueuePublisher;
 
     public void processNemsEvent(String message) {
         try {
@@ -30,8 +32,8 @@ public class NemsEventService {
             unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
-            log.info("PROCESSING FAILED - sending to unhandled sns topic");
-            unhandledEventPublisher.sendMessage(message, e.getMessage());
+            log.info("PROCESSING FAILED - sending to DLQ because error: " + e.getMessage());
+            deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
     }
 

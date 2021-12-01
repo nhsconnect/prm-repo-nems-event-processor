@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
@@ -18,6 +19,8 @@ class NemsEventServiceTest {
     private UnhandledEventPublisher unhandledEventPublisher;
     @Mock
     private SuspensionsEventPublisher suspensionsEventPublisher;
+    @Mock
+    private DeadLetterQueuePublisher deadLetterQueuePublisher;
     @Mock
     private NemsEventParser nemsEventParser;
 
@@ -51,6 +54,6 @@ class NemsEventServiceTest {
         when(nemsEventParser.parse(anyString())).thenThrow(new NemsEventParseException("failed-to-parse"));
         String incomingMessage = "will throw a parse exception";
         nemsEventService.processNemsEvent(incomingMessage);
-        verify(unhandledEventPublisher, times(1)).sendMessage(incomingMessage, "NemsEventParseException: failed-to-parse");
+        verify(deadLetterQueuePublisher, times(1)).sendMessage(incomingMessage, "NemsEventParseException: failed-to-parse");
     }
 }
