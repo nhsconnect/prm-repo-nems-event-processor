@@ -77,7 +77,12 @@ public class NemsEventParser {
 
     @NotNull
     private XML parseMessageXML(String messageBody) {
-        return new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
+        try {
+            return new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
+        } catch (IllegalArgumentException exception) {
+            log.info("Failed to parse message - invalid XML: {}", exception.getMessage());
+            throw new NemsEventParseException(exception);
+        }
     }
 
     private String query(XML messageXml, String query) {

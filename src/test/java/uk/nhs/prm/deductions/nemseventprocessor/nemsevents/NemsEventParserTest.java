@@ -85,9 +85,7 @@ class NemsEventParserTest {
 
     @Test
     void shouldTreatAMessageThatIsNotAFhirMessageAsANonSuspension() {
-        NemsEventMessage message = nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
-
-        assertFalse(message.isSuspension());
+        assertThrows(NemsEventParseException.class, () -> nemsEventParser.parse("should fail as not xml"));
     }
 
     @Test

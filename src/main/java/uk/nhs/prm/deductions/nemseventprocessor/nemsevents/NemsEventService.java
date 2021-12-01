@@ -32,7 +32,7 @@ public class NemsEventService {
             unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
-            log.info("PROCESSING FAILED - sending to DLQ because error: " + e.getMessage());
+            log.info("PROCESSING FAILED - sending to dead letter sns topic, error: {}", e.getMessage());
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
     }
