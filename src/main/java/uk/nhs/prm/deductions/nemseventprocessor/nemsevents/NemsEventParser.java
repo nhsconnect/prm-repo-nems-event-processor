@@ -16,7 +16,7 @@ public class NemsEventParser {
             log.info("Parsing message");
             return tryToParse(messageBody);
         } catch (RuntimeException exception) {
-            log.info("Failed to parse NEMS event message", exception);
+            log.info("Failed to parse NEMS event message: {}", exception.getMessage());
             throw new NemsEventParseException(exception);
         }
     }
@@ -80,8 +80,7 @@ public class NemsEventParser {
         try {
             return new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
         } catch (IllegalArgumentException exception) {
-            log.info("Failed to parse message - invalid XML: {}", exception.getMessage());
-            throw new NemsEventParseException(exception);
+            throw new NemsEventParseException("Invalid/non XML message");
         }
     }
 

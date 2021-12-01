@@ -85,7 +85,9 @@ class NemsEventParserTest {
 
     @Test
     void shouldTreatAMessageThatIsNotAFhirMessageAsANonSuspension() {
-        assertThrows(NemsEventParseException.class, () -> nemsEventParser.parse("should fail as not xml"));
+        NemsEventMessage message = nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
+
+        assertFalse(message.isSuspension());
     }
 
     @Test
@@ -281,12 +283,10 @@ class NemsEventParserTest {
 
     @Test
     void shouldIncludeCauseOfErrorInParsingExceptionWhenPassedNonXml() {
-        NemsEventParser nemsEventParser = new NemsEventParser();
-
         Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
             nemsEventParser.parse("not-an-xml");
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("Can't parse");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("Invalid/non XML message");
     }
 }
