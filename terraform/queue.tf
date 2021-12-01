@@ -253,27 +253,27 @@ resource "aws_ssm_parameter" "dead_letter_queue_sns_topic" {
   value = aws_sns_topic.dead_letter_queue.arn
 }
 
-resource "aws_sqs_queue" "dead_letter_queue_observability" {
-  name                       = "${var.environment}-${var.component_name}-dlq-observability-queue"
+resource "aws_sqs_queue" "dead_letter_queue" {
+  name                       = "${var.environment}-${var.component_name}-dlq-queue"
   message_retention_seconds  = 1800
   kms_master_key_id = aws_ssm_parameter.dead_letter_queue_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-dlq-observability-queue"
+    Name = "${var.environment}-${var.component_name}-dlq-queue"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_sns_topic_subscription" "dead_letter_queue_events_to_observability_queue" {
+resource "aws_sns_topic_subscription" "dlq_sns_topic_to_dead_letter_queue" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.dead_letter_queue.arn
-  endpoint             = aws_sqs_queue.dead_letter_queue_observability.arn
+  endpoint             = aws_sqs_queue.dead_letter_queue.arn
 }
 
 resource "aws_sqs_queue_policy" "dead_letter_queue_subscription" {
-  queue_url = aws_sqs_queue.dead_letter_queue_observability.id
+  queue_url = aws_sqs_queue.dead_letter_queue.id
   policy    = data.aws_iam_policy_document.dead_letter_queue_sns_topic_access_to_queue.json
 }
 
@@ -291,7 +291,7 @@ data "aws_iam_policy_document" "dead_letter_queue_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.dead_letter_queue_observability.arn
+      aws_sqs_queue.dead_letter_queue.arn
     ]
 
     condition {
