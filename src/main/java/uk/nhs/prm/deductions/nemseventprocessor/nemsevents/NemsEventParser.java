@@ -16,7 +16,7 @@ public class NemsEventParser {
             log.info("Parsing message");
             return tryToParse(messageBody);
         } catch (RuntimeException exception) {
-            log.info("Failed to parse NEMS event message: {}", exception.getMessage());
+            log.info("Failed to parse NEMS event message: " + exception);
             throw new NemsEventParseException(exception);
         }
     }
