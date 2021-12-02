@@ -16,6 +16,12 @@ resource "aws_sqs_queue" "incoming_nems_events" {
   }
 }
 
+resource "aws_ssm_parameter" "incoming_nems_events_queue" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/incoming-nems-events-queue-name"
+  type  = "String"
+  value = aws_sqs_queue.incoming_nems_events.name
+}
+
 resource "aws_sns_topic_subscription" "nems_events_to_incoming_queue" {
   protocol             = "sqs"
   raw_message_delivery = true
@@ -78,6 +84,12 @@ resource "aws_sqs_queue" "unhandled_events" {
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+resource "aws_ssm_parameter" "unhandled_events_queue_name" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/unhandled_events_queue_name"
+  type  = "String"
+  value = aws_sqs_queue.unhandled_events.name
 }
 
 resource "aws_sns_topic_subscription" "unhandled_events_to_queue" {
@@ -263,6 +275,12 @@ resource "aws_sqs_queue" "dlq" {
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+resource "aws_ssm_parameter" "dlq_name" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/dlq-name"
+  type  = "String"
+  value = aws_sqs_queue.dlq.name
 }
 
 resource "aws_sns_topic_subscription" "dlq_sns_topic_to_dlq" {
