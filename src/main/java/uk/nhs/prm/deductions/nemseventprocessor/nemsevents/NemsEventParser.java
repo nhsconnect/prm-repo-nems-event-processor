@@ -25,8 +25,8 @@ public class NemsEventParser {
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
         if (hasNoPatientEntry(messageXml)) {
-            log.warn("NEMS event has no patient entry");
-            return NemsEventMessage.nonSuspension();
+            log.warn("Patient entry and NHS Number missing");
+            throw new NemsEventParseException("Patient entry and NHS Number missing");
         }
 
         if (hasNoGpEntry(messageXml)) {
@@ -60,7 +60,11 @@ public class NemsEventParser {
     }
 
     private String extractNhsNumber(XML messageXml) {
-        return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:value/@value");
+        try {
+            return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:value/@value");
+        } catch (Exception e) {
+            throw new NemsEventParseException("Patient entry present, NHS Number missing");
+        }
     }
 
     private String extractWhenLastUpdated(XML messageXml) {

@@ -84,23 +84,10 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldTreatAMessageThatIsNotAFhirMessageAsANonSuspension() {
-        NemsEventMessage message = nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
-
-        assertFalse(message.isSuspension());
-    }
-
-    @Test
-    void shouldTreatAMessageThatDoesNotHaveAFhirPatientEntryAsANonSuspension() {
-        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                "    <entry>\n" +
-                "        <resource></resource>\n" +
-                "    </entry>\n" +
-                "</Bundle>";
-
-        NemsEventMessage message = nemsEventParser.parse(messageBody);
-
-        assertFalse(message.isSuspension());
+    void shouldThrowAParseExceptionWhenInvalidXML() {
+        assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
+        });
     }
 
     @Test
@@ -288,5 +275,43 @@ class NemsEventParserTest {
         });
 
         assertThat(nemsEventParseException.getCause().getMessage()).contains("Invalid/non XML message");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractPatientFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Patient entry and NHS Number missing");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractNhsNumberFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                </identifier>\n" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Patient entry present, NHS Number missing");
     }
 }
