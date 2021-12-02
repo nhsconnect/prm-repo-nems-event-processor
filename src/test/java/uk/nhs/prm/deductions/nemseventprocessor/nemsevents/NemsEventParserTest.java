@@ -364,4 +364,42 @@ class NemsEventParserTest {
 
         assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
     }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractLastUpdatedFieldFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                PATIENT_ENTRY +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractLastUpdatedValueFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <MessageHeader>\n" +
+                "                <meta>\n" +
+                "                </meta>\n" +
+                "            </MessageHeader>\n" +
+                "        </resource>\n" +
+                "    </entry>" +
+                PATIENT_ENTRY +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
+    }
 }

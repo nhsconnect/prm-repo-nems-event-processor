@@ -71,7 +71,11 @@ public class NemsEventParser {
     }
 
     private String extractWhenLastUpdated(XML messageXml) {
-        return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
+        try {
+            return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
+        } catch (Exception e){
+            throw new NemsEventParseException("Cannot extract last updated field");
+        }
     }
 
     private boolean hasNoPatientEntry(XML messageXml) {
