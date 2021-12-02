@@ -11,6 +11,7 @@ resource "aws_ecs_service" "ecs-service" {
   desired_count   = var.service_desired_count
   launch_type     = "FARGATE"
 
+
   network_configuration {
     security_groups = [local.ecs_task_sg_id]
     subnets         = local.private_subnets
@@ -21,8 +22,19 @@ resource "aws_ecs_service" "ecs-service" {
 resource "aws_ecs_cluster" "ecs-cluster" {
   name = "${var.environment}-${var.component_name}-ecs-cluster"
 
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
   tags = {
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+resource "aws_ssm_parameter" "ecs-cluster-name" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/nems-event-processor-ecs-cluster-name"
+  type  = "String"
+  value = aws_ecs_cluster.ecs-cluster.name
 }
