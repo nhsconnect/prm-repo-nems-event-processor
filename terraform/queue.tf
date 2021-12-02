@@ -160,6 +160,12 @@ resource "aws_sqs_queue" "suspensions_observability" {
   }
 }
 
+resource "aws_ssm_parameter" "suspensions_observability_queue" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/suspensions-observability-queue-name"
+  type  = "String"
+  value = aws_sqs_queue.suspensions_observability.name
+}
+
 resource "aws_sns_topic_subscription" "suspensions_events_to_observability_queue" {
   protocol             = "sqs"
   raw_message_delivery = true
