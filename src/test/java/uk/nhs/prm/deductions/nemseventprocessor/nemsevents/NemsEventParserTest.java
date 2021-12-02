@@ -314,4 +314,54 @@ class NemsEventParserTest {
 
         assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Patient entry present, NHS Number missing");
     }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeUrlFieldFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <EpisodeOfCare>\n" +
+                "                <status value=\"finished\"/>\n" +
+                "                <managingOrganization>\n" +
+// dont uncomment - missing reference value below:
+//                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "                </managingOrganization>\n" +
+                "            </EpisodeOfCare>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeOrganizationFieldFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <EpisodeOfCare>\n" +
+                "                <status value=\"finished\"/>\n" +
+                "                <managingOrganization>\n" +
+                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "                </managingOrganization>\n" +
+                "            </EpisodeOfCare>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
+    }
 }

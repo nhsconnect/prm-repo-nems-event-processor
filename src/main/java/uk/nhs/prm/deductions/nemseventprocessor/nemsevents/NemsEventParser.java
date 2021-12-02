@@ -39,12 +39,9 @@ public class NemsEventParser {
 
     @NotNull
     private NemsEventMessage createSuspensionMessage(final XML messageXml) {
-        final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
-        final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
-
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
-                extractOdsCode(organizationXml));
+                extractOdsCode(messageXml));
     }
 
     private String extractPreviousGpUrl(XML messageXml) {
@@ -55,8 +52,14 @@ public class NemsEventParser {
         return messageXml.nodes("//fhir:entry[fhir:fullUrl/@value='" + organizationUrl + "']/fhir:resource/fhir:Organization").get(0);
     }
 
-    private String extractOdsCode(XML organizationXml) {
-        return query(organizationXml, "fhir:identifier[contains(fhir:system/@value,'ods-organization-code')]/fhir:value/@value");
+    private String extractOdsCode(XML messageXml) {
+        try {
+            final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
+            final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
+            return query(organizationXml, "fhir:identifier[contains(fhir:system/@value,'ods-organization-code')]/fhir:value/@value");
+        } catch (Exception e) {
+            throw new NemsEventParseException("Cannot extract previous GP ODS Code");
+        }
     }
 
     private String extractNhsNumber(XML messageXml) {
