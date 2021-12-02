@@ -32,7 +32,7 @@ public class NemsEventService {
             unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
-            log.info("PROCESSING FAILED - sending to dead letter sns topic, error: {}", e.getMessage());
+            log.info("PROCESSING FAILED - sending to dead letter sns topic");
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
     }
