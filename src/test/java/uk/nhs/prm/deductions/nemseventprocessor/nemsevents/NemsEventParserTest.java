@@ -236,11 +236,9 @@ class NemsEventParserTest {
 
     @Test
     void shouldThrowAParseExceptionWhenInvalidXML() {
-        NemsEventParseException nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+        assertThrows(NemsEventParseException.class, () -> {
             nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
         });
-
-        assertThat(nemsEventParseException.getMessage()).contains("Invalid");
     }
 
     @Test

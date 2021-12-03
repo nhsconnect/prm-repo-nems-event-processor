@@ -28,7 +28,6 @@ public class NemsEventParser {
     @NotNull
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
-        checkValidXml(messageXml);
         if (hasNoGpEntry(messageXml)) {
             log.info("NEMS event has no current GP - Suspension Event");
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml), extractOdsCode(messageXml));
@@ -36,14 +35,6 @@ public class NemsEventParser {
         }
 
         return NemsEventMessage.nonSuspension();
-    }
-
-    private void checkValidXml(XML messageXml) {
-        try {
-            query(messageXml, "//fhir:meta/fhir:profile/@value");
-        } catch (Exception e) {
-            throw new NemsEventParseException("Invalid NEMS event");
-        }
     }
 
     @NotNull
