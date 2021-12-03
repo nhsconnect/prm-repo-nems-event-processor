@@ -8,31 +8,31 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class NemsEventParserTest {
-
     private static final String PREVIOUS_GP_ORGANIZATION =
             "    <entry>\n" +
-            "        <fullUrl value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
-            "        <resource>\n" +
-            "            <Organization>\n" +
-            "                <identifier>\n" +
-            "                    <system value=\"https://fhir.nhs.uk/Id/ods-organization-code\"/>\n" +
-            "                    <value value=\"B85612\"/>\n" +
-            "                </identifier>\n" +
-            "            </Organization>\n" +
-            "        </resource>\n" +
-            "    </entry>";
+                    "        <fullUrl value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                    "        <resource>\n" +
+                    "            <Organization>\n" +
+                    "                <identifier>\n" +
+                    "                    <system value=\"https://fhir.nhs.uk/Id/ods-organization-code\"/>\n" +
+                    "                    <value value=\"B85612\"/>\n" +
+                    "                </identifier>\n" +
+                    "            </Organization>\n" +
+                    "        </resource>\n" +
+                    "    </entry>";
 
     private static final String EPISODE_OF_CARE =
             "   <entry>\n" +
-            "        <resource>\n" +
-            "            <EpisodeOfCare>\n" +
-            "                <status value=\"finished\"/>\n" +
-            "                <managingOrganization>\n" +
-            "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
-            "                </managingOrganization>\n" +
-            "            </EpisodeOfCare>\n" +
-            "        </resource>\n" +
-            "    </entry>\n";
+                    "        <resource>\n" +
+                    "            <EpisodeOfCare>\n" +
+                    "                <status value=\"finished\"/>\n" +
+                    "                <managingOrganization>\n" +
+                    "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                    "                </managingOrganization>\n" +
+                    "            </EpisodeOfCare>\n" +
+                    "        </resource>\n" +
+                    "    </entry>\n";
+
     public static final String LAST_UPDATED = "   <entry>\n" +
             "        <resource>\n" +
             "            <MessageHeader>\n" +
@@ -43,13 +43,40 @@ class NemsEventParserTest {
             "        </resource>\n" +
             "    </entry>";
 
-    public static final String PATIENT_ENTRY = "    <entry>\n" +
+    public static final String PATIENT_ENTRY_WITHOUT_CURRENT_GP = "    <entry>\n" +
             "        <resource>\n" +
             "            <Patient>\n" +
             "                <identifier>\n" +
-            "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
+            "                   <extension>\n" +
+            "                        <valueCodeableConcept>\n" +
+            "                            <coding>\n" +
+            "                                <code value=\"01\"/>\n" +
+            "                            </coding>\n" +
+            "                        </valueCodeableConcept>\n" +
+            "                    </extension>" +
             "                    <value value=\"9912003888\"/>\n" +
             "                </identifier>\n" +
+            "            </Patient>\n" +
+            "        </resource>\n" +
+            "    </entry>\n";
+
+    public static final String PATIENT_ENTRY_WITH_CURRENT_GP = "    <entry>\n" +
+            "        <resource>\n" +
+            "            <Patient>\n" +
+            "                <identifier>\n" +
+            "                   <extension>\n" +
+            "                        <valueCodeableConcept>\n" +
+            "                            <coding>\n" +
+            "                                <code value=\"01\"/>\n" +
+            "                            </coding>\n" +
+            "                        </valueCodeableConcept>\n" +
+            "                    </extension>" +
+            "                    <value value=\"9912003888\"/>\n" +
+            "                </identifier>\n" +
+            "                <generalPractitioner>\n" +
+            "                    <reference value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
+            "                    <display value=\"SHADWELL MEDICAL CENTRE\"/>\n" +
+            "                </generalPractitioner>" +
             "            </Patient>\n" +
             "        </resource>\n" +
             "    </entry>\n";
@@ -59,21 +86,14 @@ class NemsEventParserTest {
     @BeforeEach
     void setUp() {
         nemsEventParser = new NemsEventParser();
+
     }
 
     @Test
     void shouldParseANemsMessageAsASuspensionWhenGPFieldIsMissing() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
-                "    <entry>\n" +
-                "        <resource>\n" +
-                "            <Patient>\n" +
-                "                <identifier>\n" +
-                "                    <value value=\"9912003888\"/>\n" +
-                "                </identifier>\n" +
-                "            </Patient>\n" +
-                "        </resource>\n" +
-                "    </entry>\n" +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
@@ -84,38 +104,12 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldThrowAParseExceptionWhenInvalidXML() {
-        assertThrows(NemsEventParseException.class, () -> {
-            nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
-        });
-    }
-
-    @Test
-    void shouldFailToParseIfThereIsMoreThanOnePatientEntry() {
-        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
-                PATIENT_ENTRY +
-                PATIENT_ENTRY +
-                EPISODE_OF_CARE +
-                PREVIOUS_GP_ORGANIZATION +
-                "</Bundle>";
-
-        assertThrows(NemsEventParseException.class, () -> nemsEventParser.parse(messageBody));
-    }
-
-    @Test
     void shouldParseANemsMessageAsANonSuspensionWhenGPFieldIsPresentInThePatientSection() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                "    <entry>\n" +
-                "        <resource>\n" +
-                "            <Patient>\n" +
-                "                <generalPractitioner>\n" +
-                "                    <reference value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
-                "                    <display value=\"SHADWELL MEDICAL CENTRE\"/>\n" +
-                "                </generalPractitioner>\n" +
-                "            </Patient>\n" +
-                "        </resource>\n" +
-                "    </entry>\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY_WITH_CURRENT_GP +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
 
         NemsEventMessage message = nemsEventParser.parse(messageBody);
@@ -131,6 +125,13 @@ class NemsEventParserTest {
                 "        <resource>\n" +
                 "            <Patient>\n" +
                 "                <identifier>\n" +
+                "                   <extension>\n" +
+                "                       <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"01\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
                 "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
                 "                    <value value=\"9912003888\"/>\n" +
                 "                </identifier>\n" +
@@ -150,16 +151,7 @@ class NemsEventParserTest {
     void shouldParseANemsMessageAsASuspensionWhenGPFieldIsPresentOnlyInNonPatientEntriesInTheMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
-                "    <entry>\n" +
-                "        <resource>\n" +
-                "            <Patient>\n" +
-                "                <identifier>\n" +
-                "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
-                "                    <value value=\"9912003888\"/>\n" +
-                "                </identifier>\n" +
-                "            </Patient>\n" +
-                "        </resource>\n" +
-                "    </entry>\n" +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Organization>\n" +
@@ -193,16 +185,7 @@ class NemsEventParserTest {
                 "            </MessageHeader>\n" +
                 "        </resource>\n" +
                 "    </entry>" +
-                "    <entry>\n" +
-                "        <resource>\n" +
-                "            <Patient>\n" +
-                "                <identifier>\n" +
-                "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
-                "                    <value value=\"9912003888\"/>\n" +
-                "                </identifier>\n" +
-                "            </Patient>\n" +
-                "        </resource>\n" +
-                "    </entry>\n" +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
@@ -218,16 +201,7 @@ class NemsEventParserTest {
     void shouldExtractGPPracticeURLFieldWhenParsingASuspensionMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
-                "   <entry>\n" +
-                "        <resource>\n" +
-                "            <Patient>\n" +
-                "                <identifier>\n" +
-                "                    <system value=\"https://fhir.nhs.uk/Id/nhs-number\"/>\n" +
-                "                    <value value=\"9912003888\"/>\n" +
-                "                </identifier>\n" +
-                "            </Patient>\n" +
-                "        </resource>\n" +
-                "    </entry>\n" +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <EpisodeOfCare>\n" +
@@ -259,6 +233,16 @@ class NemsEventParserTest {
         assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
     }
 
+
+    //ERROR HANDLING
+
+    @Test
+    void shouldThrowAParseExceptionWhenInvalidXML() {
+        assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse("<anyOldMessage></anyOldMessage>");
+        });
+    }
+
     @Test
     void shouldThrowParsingExceptionWhenPassedNonXml() {
         NemsEventParser nemsEventParser = new NemsEventParser();
@@ -269,12 +253,16 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldIncludeCauseOfErrorInParsingExceptionWhenPassedNonXml() {
-        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
-            nemsEventParser.parse("not-an-xml");
-        });
+    void shouldFailToParseIfThereIsMoreThanOnePatientEntry() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("Invalid/non XML message");
+        assertThrows(NemsEventParseException.class, () -> nemsEventParser.parse(messageBody));
     }
 
     @Test
@@ -319,14 +307,12 @@ class NemsEventParserTest {
     void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeUrlFieldFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
-                PATIENT_ENTRY +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <EpisodeOfCare>\n" +
                 "                <status value=\"finished\"/>\n" +
                 "                <managingOrganization>\n" +
-// dont uncomment - missing reference value below:
-//                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
                 "                </managingOrganization>\n" +
                 "            </EpisodeOfCare>\n" +
                 "        </resource>\n" +
@@ -345,7 +331,7 @@ class NemsEventParserTest {
     void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeOrganizationFieldFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
-                PATIENT_ENTRY +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <EpisodeOfCare>\n" +
@@ -366,9 +352,17 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldThrowAnErrorWhenCannotExtractLastUpdatedFieldFromNemsEvent() {
+    void shouldThrowAnErrorWhenCannotExtractLastUpdatedValueFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                PATIENT_ENTRY +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <MessageHeader>\n" +
+                "                <meta>\n" +
+                "                </meta>\n" +
+                "            </MessageHeader>\n" +
+                "        </resource>\n" +
+                "    </entry>" +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
@@ -380,18 +374,28 @@ class NemsEventParserTest {
         assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
     }
 
+    //VALIDATION
+
     @Test
-    void shouldThrowAnErrorWhenCannotExtractLastUpdatedValueFromNemsEvent() {
+    void shouldThrowAnErrorWhenNhsNumberIsNot10DigitsLong() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                "   <entry>\n" +
+                LAST_UPDATED +
+                "    <entry>\n" +
                 "        <resource>\n" +
-                "            <MessageHeader>\n" +
-                "                <meta>\n" +
-                "                </meta>\n" +
-                "            </MessageHeader>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                   <extension url=\"https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-NHSNumberVerificationStatus-1\">\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"01\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
+                "                    <value value=\"9912003\"/>\n" +
+                "                </identifier>\n" +
+                "            </Patient>\n" +
                 "        </resource>\n" +
-                "    </entry>" +
-                PATIENT_ENTRY +
+                "    </entry>\n" +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
@@ -400,6 +404,63 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventValidationException: NHS Number is not 10 digits");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenNhsNumberHasNotGot01ValidationCode() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                   <extension url=\"https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-NHSNumberVerificationStatus-1\">\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"02\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
+                "                    <value value=\"9912003098\"/>\n" +
+                "                </identifier>\n" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventValidationException: NHS Number verification code does not equal 01");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenPreviousGpOdsCodeIsMoreThan10Digits() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+                EPISODE_OF_CARE +
+                "    <entry>\n" +
+                "    <fullUrl value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "       <resource>\n" +
+                "            <Organization>\n" +
+                "                <identifier>\n" +
+                "                    <system value=\"https://fhir.nhs.uk/Id/ods-organization-code\"/>\n" +
+                "                    <value value=\"B85612676543\"/>\n" +
+                "                </identifier>\n" +
+                "            </Organization>\n" +
+                "        </resource>\n" +
+                "    </entry>" +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventValidationException: Previous GP ODS Code is more than 10 characters");
     }
 }

@@ -94,6 +94,13 @@ class NemsEventsIntegrationTest {
                 "        <resource>\n" +
                 "            <Patient>\n" +
                 "                <identifier>\n" +
+                "                   <extension>\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"01\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
                 "                    <value value=\"9912003888\"/>\n" +
                 "                </identifier>\n" +
                 "            </Patient>\n" +

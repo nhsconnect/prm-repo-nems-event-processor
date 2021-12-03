@@ -30,11 +30,17 @@ public class NemsEventParser {
         }
 
         if (hasNoGpEntry(messageXml)) {
-            log.info("NEMS event has no current GP");
+            log.info("NEMS event has no current GP - Suspension Event");
+            validateEventValues(messageXml);
             return createSuspensionMessage(messageXml);
         }
 
         return NemsEventMessage.nonSuspension();
+    }
+
+    private void validateEventValues(XML messageXml) {
+        validateNhsNumber(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml));
+        validatePreviousGpOdsCode(extractOdsCode(messageXml));
     }
 
     @NotNull
@@ -42,6 +48,20 @@ public class NemsEventParser {
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
                 extractOdsCode(messageXml));
+    }
+
+    private void validateNhsNumber(String nhsNumber, String validationValue) {
+        if (nhsNumber.length() != 10) {
+            throw new NemsEventValidationException("NHS Number is not 10 digits");
+        } else if (!validationValue.equalsIgnoreCase("01")) {
+            throw new NemsEventValidationException("NHS Number verification code does not equal 01");
+        }
+    }
+
+    private void validatePreviousGpOdsCode(String odsCode) {
+        if (odsCode.length() > 10) {
+            throw new NemsEventValidationException("Previous GP ODS Code is more than 10 characters");
+        }
     }
 
     private String extractPreviousGpUrl(XML messageXml) {
@@ -68,6 +88,10 @@ public class NemsEventParser {
         } catch (Exception e) {
             throw new NemsEventParseException("Patient entry present, NHS Number missing");
         }
+    }
+
+    private String extractNhsNumberValidationValue(XML messageXml) {
+        return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:extension/fhir:valueCodeableConcept/fhir:coding/fhir:code/@value");
     }
 
     private String extractWhenLastUpdated(XML messageXml) {
