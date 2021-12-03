@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,10 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class NemsEventParser {
+    private final NemsEventValidator validator;
+
     public NemsEventMessage parse(final String messageBody) {
         try {
             log.info("Parsing message");
@@ -24,23 +28,22 @@ public class NemsEventParser {
     @NotNull
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
-        if (hasNoPatientEntry(messageXml)) {
-            log.warn("Patient entry and NHS Number missing");
-            throw new NemsEventParseException("Patient entry and NHS Number missing");
-        }
-
+        checkValidXml(messageXml);
         if (hasNoGpEntry(messageXml)) {
             log.info("NEMS event has no current GP - Suspension Event");
-            validateEventValues(messageXml);
+            validator.validate(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml), extractOdsCode(messageXml));
             return createSuspensionMessage(messageXml);
         }
 
         return NemsEventMessage.nonSuspension();
     }
 
-    private void validateEventValues(XML messageXml) {
-        validateNhsNumber(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml));
-        validatePreviousGpOdsCode(extractOdsCode(messageXml));
+    private void checkValidXml(XML messageXml) {
+        try {
+            query(messageXml, "//fhir:meta/fhir:profile/@value");
+        } catch (Exception e) {
+            throw new NemsEventParseException("Invalid NEMS event");
+        }
     }
 
     @NotNull
@@ -48,20 +51,6 @@ public class NemsEventParser {
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
                 extractOdsCode(messageXml));
-    }
-
-    private void validateNhsNumber(String nhsNumber, String validationValue) {
-        if (nhsNumber.length() != 10) {
-            throw new NemsEventValidationException("NHS Number is not 10 digits");
-        } else if (!validationValue.equalsIgnoreCase("01")) {
-            throw new NemsEventValidationException("NHS Number verification code does not equal 01");
-        }
-    }
-
-    private void validatePreviousGpOdsCode(String odsCode) {
-        if (odsCode.length() > 10) {
-            throw new NemsEventValidationException("Previous GP ODS Code is more than 10 characters");
-        }
     }
 
     private String extractPreviousGpUrl(XML messageXml) {
@@ -86,7 +75,7 @@ public class NemsEventParser {
         try {
             return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:value/@value");
         } catch (Exception e) {
-            throw new NemsEventParseException("Patient entry present, NHS Number missing");
+            throw new NemsEventParseException("NHS Number missing");
         }
     }
 
@@ -102,10 +91,6 @@ public class NemsEventParser {
         }
     }
 
-    private boolean hasNoPatientEntry(XML messageXml) {
-        return messageXml.nodes("//fhir:Patient").isEmpty();
-    }
-
     private boolean hasNoGpEntry(XML messageXml) {
         return messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty();
     }
@@ -114,7 +99,7 @@ public class NemsEventParser {
     private XML parseMessageXML(String messageBody) {
         try {
             return new XMLDocument(messageBody).registerNs("fhir", "http://hl7.org/fhir");
-        } catch (IllegalArgumentException exception) {
+        } catch (Exception exception) {
             throw new NemsEventParseException("Invalid/non XML message");
         }
     }

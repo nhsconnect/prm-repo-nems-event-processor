@@ -15,8 +15,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NemsEventService {
 
-    private final UnhandledEventPublisher unhandledEventPublisher;
     private final NemsEventParser parser;
+    private final UnhandledEventPublisher unhandledEventPublisher;
     private final SuspensionsEventPublisher suspensionsEventPublisher;
     private final DeadLetterQueuePublisher deadLetterQueuePublisher;
 
