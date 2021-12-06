@@ -283,7 +283,7 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: NHS Number missing");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract NHS Number from Patient Details Entry");
     }
 
     @Test
@@ -361,7 +361,7 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
     }
 
     @Test
@@ -385,6 +385,34 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find matching Gp URL");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find entry for Organization with previous GP ODS code");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractNhsNumberVerificationValue(){
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PREVIOUS_GP_ORGANIZATION +
+                EPISODE_OF_CARE +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                   <extension>\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
+                "                    <value value=\"9912003888\"/>\n" +
+                "                </identifier>\n" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                " </Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract nhs number verification value from Patient Details Entry");
     }
 }

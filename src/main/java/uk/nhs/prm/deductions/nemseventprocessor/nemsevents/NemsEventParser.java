@@ -32,7 +32,7 @@ public class NemsEventParser {
         final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
         if (hasNoGpEntry(messageXml)) {
             log.info("NEMS event has no current GP - Suspension Event");
-            validator.validate(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml), extractOdsCode(organizationXml));
+            validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
             return createSuspensionMessage(messageXml, organizationXml);
         }
         return NemsEventMessage.nonSuspension();
@@ -57,7 +57,7 @@ public class NemsEventParser {
         try {
             return messageXml.nodes("//fhir:entry[fhir:fullUrl/@value='" + organizationUrl + "']/fhir:resource/fhir:Organization").get(0);
         } catch (Exception e){
-            throw new NemsEventParseException("Cannot find matching Gp URL");
+            throw new NemsEventParseException("Cannot find entry for Organization with previous GP ODS code");
         }
     }
 
@@ -73,19 +73,23 @@ public class NemsEventParser {
         try {
             return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:value/@value");
         } catch (Exception e) {
-            throw new NemsEventParseException("NHS Number missing");
+            throw new NemsEventParseException("Cannot extract NHS Number from Patient Details Entry");
         }
     }
 
-    private String extractNhsNumberValidationValue(XML messageXml) {
-        return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:extension/fhir:valueCodeableConcept/fhir:coding/fhir:code/@value");
+    private String extractNhsNumberVerificationValue(XML messageXml) {
+        try {
+            return query(messageXml, "//fhir:Patient/fhir:identifier/fhir:extension/fhir:valueCodeableConcept/fhir:coding/fhir:code/@value");
+        } catch (Exception e){
+            throw new NemsEventParseException("Cannot extract nhs number verification value from Patient Details Entry");
+        }
     }
 
     private String extractWhenLastUpdated(XML messageXml) {
         try {
             return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
         } catch (Exception e){
-            throw new NemsEventParseException("Cannot extract last updated field");
+            throw new NemsEventParseException("Cannot extract last updated field from Message Header Entry");
         }
     }
 
