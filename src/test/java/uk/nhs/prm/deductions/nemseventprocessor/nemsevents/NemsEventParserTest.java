@@ -287,7 +287,7 @@ class NemsEventParserTest {
     }
 
     @Test
-    void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeUrlFieldFromNemsEvent() {
+    void shouldThrowAnErrorWhenCannotExtractPreviousGpUrlFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
@@ -307,11 +307,11 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
     }
 
     @Test
-    void shouldThrowAnErrorWhenCannotExtractPreviousGpPracticeOrganizationFieldFromNemsEvent() {
+    void shouldThrowAnErrorWhenCannotExtractPreviousGpOdsCodeFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 LAST_UPDATED +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
@@ -325,6 +325,13 @@ class NemsEventParserTest {
                 "            </EpisodeOfCare>\n" +
                 "        </resource>\n" +
                 "    </entry>\n" +
+                "    <entry>\n" +
+                "        <fullUrl value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "        <resource>\n" +
+                "            <Organization>\n" +
+                "            </Organization>\n" +
+                "        </resource>\n" +
+                "    </entry>" +
                 "</Bundle>";
 
         Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
@@ -355,5 +362,29 @@ class NemsEventParserTest {
         });
 
         assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotFindMatchingGpUrl(){
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <EpisodeOfCare>\n" +
+                "                <status value=\"finished\"/>\n" +
+                "                <managingOrganization>\n" +
+                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "                </managingOrganization>\n" +
+                "            </EpisodeOfCare>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find matching Gp URL");
     }
 }

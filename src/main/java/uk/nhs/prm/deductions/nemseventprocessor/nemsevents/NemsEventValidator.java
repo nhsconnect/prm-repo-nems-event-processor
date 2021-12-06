@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class NemsEventValidator {
+    private static final String nhsNumberVerificationStatus = "01";
     public void validate(String nhsNumber, String nhsNumberValidationValue, String odsCode) {
         validateNhsNumber(nhsNumber, nhsNumberValidationValue);
         validatePreviousGpOdsCode(odsCode);
@@ -14,8 +15,8 @@ public class NemsEventValidator {
     private void validateNhsNumber(String nhsNumber, String validationValue) {
         if (nhsNumber.length() != 10) {
             throw new NemsEventValidationException("NHS Number is not 10 digits");
-        } else if (!validationValue.equalsIgnoreCase("01")) {
-            throw new NemsEventValidationException("NHS Number verification code does not equal 01");
+        } else if (!validationValue.equalsIgnoreCase(nhsNumberVerificationStatus)) {
+            throw new NemsEventValidationException("NHS Number verification code does not equal" + nhsNumberVerificationStatus);
         }
     }
 

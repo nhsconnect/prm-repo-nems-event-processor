@@ -28,34 +28,41 @@ public class NemsEventParser {
     @NotNull
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
+        final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
+        final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
         if (hasNoGpEntry(messageXml)) {
             log.info("NEMS event has no current GP - Suspension Event");
-            validator.validate(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml), extractOdsCode(messageXml));
-            return createSuspensionMessage(messageXml);
+            validator.validate(extractNhsNumber(messageXml), extractNhsNumberValidationValue(messageXml), extractOdsCode(organizationXml));
+            return createSuspensionMessage(messageXml, organizationXml);
         }
-
         return NemsEventMessage.nonSuspension();
     }
 
     @NotNull
-    private NemsEventMessage createSuspensionMessage(final XML messageXml) {
+    private NemsEventMessage createSuspensionMessage(final XML messageXml, XML organizationXml) {
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
-                extractOdsCode(messageXml));
+                extractOdsCode(organizationXml));
     }
 
     private String extractPreviousGpUrl(XML messageXml) {
-        return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
+        try {
+            return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
+        } catch (Exception e){
+            throw new NemsEventParseException("Cannot extract previous GP URL Field from finished EpisodeOfCare");
+        }
     }
 
     private XML findOrganizationByUrl(XML messageXml, String organizationUrl) {
-        return messageXml.nodes("//fhir:entry[fhir:fullUrl/@value='" + organizationUrl + "']/fhir:resource/fhir:Organization").get(0);
+        try {
+            return messageXml.nodes("//fhir:entry[fhir:fullUrl/@value='" + organizationUrl + "']/fhir:resource/fhir:Organization").get(0);
+        } catch (Exception e){
+            throw new NemsEventParseException("Cannot find matching Gp URL");
+        }
     }
 
-    private String extractOdsCode(XML messageXml) {
+    private String extractOdsCode(XML organizationXml) {
         try {
-            final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
-            final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
             return query(organizationXml, "fhir:identifier[contains(fhir:system/@value,'ods-organization-code')]/fhir:value/@value");
         } catch (Exception e) {
             throw new NemsEventParseException("Cannot extract previous GP ODS Code");
