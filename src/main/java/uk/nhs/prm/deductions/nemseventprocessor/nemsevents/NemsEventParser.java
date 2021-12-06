@@ -28,9 +28,9 @@ public class NemsEventParser {
     @NotNull
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
-        final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
-        final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
         if (hasNoGpEntry(messageXml)) {
+            final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
+            final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
             log.info("NEMS event has no current GP - Suspension Event");
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
             return createSuspensionMessage(messageXml, organizationXml);

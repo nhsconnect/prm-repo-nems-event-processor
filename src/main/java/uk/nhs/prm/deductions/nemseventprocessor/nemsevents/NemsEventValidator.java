@@ -16,7 +16,7 @@ public class NemsEventValidator {
         if (nhsNumber.length() != 10) {
             throw new NemsEventValidationException("NHS Number is not 10 digits");
         } else if (!validationValue.equalsIgnoreCase(nhsNumberVerificationStatus)) {
-            throw new NemsEventValidationException("NHS Number verification code does not equal" + nhsNumberVerificationStatus);
+            throw new NemsEventValidationException("NHS Number verification code does not equal " + nhsNumberVerificationStatus);
         }
     }
 
