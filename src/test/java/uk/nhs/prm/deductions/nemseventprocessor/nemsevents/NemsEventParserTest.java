@@ -307,7 +307,31 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from EpisodeOfCare");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractFinishedEpisodeOfCare() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+                "   <entry>\n" +
+                "        <resource>\n" +
+                "            <EpisodeOfCare>\n" +
+                "                <managingOrganization>\n" +
+                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "                </managingOrganization>\n" +
+                "            </EpisodeOfCare>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find EpisodeOfCare with finished status");
     }
 
     @Test
@@ -414,5 +438,20 @@ class NemsEventParserTest {
         });
 
         assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract nhs number verification value from Patient Details Entry");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractPatientFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                LAST_UPDATED +
+                EPISODE_OF_CARE +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find Patient Details entry - invalid message");
     }
 }

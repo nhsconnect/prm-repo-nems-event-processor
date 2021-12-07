@@ -28,14 +28,26 @@ public class NemsEventParser {
     @NotNull
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
+
+        if (hasNoPatientEntry(messageXml)) {
+            throw new NemsEventParseException("Cannot find Patient Details entry - invalid message");
+        }
         if (hasNoGpEntry(messageXml)) {
-            final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
-            final XML organizationXml = findOrganizationByUrl(messageXml, previousGpReferenceUrl);
-            log.info("NEMS event has no current GP - Suspension Event");
+            log.info("NEMS event has no current GP");
+            final XML organizationXml = getOrganizationXml(messageXml);
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
             return createSuspensionMessage(messageXml, organizationXml);
         }
+
         return NemsEventMessage.nonSuspension();
+    }
+
+    private XML getOrganizationXml(XML messageXml) {
+        if (hasNoFinishedEpisodeOfCare(messageXml)) {
+            throw new NemsEventParseException("Cannot find EpisodeOfCare with finished status");
+        }
+        final String previousGpReferenceUrl = extractPreviousGpUrl(messageXml);
+        return findOrganizationByUrl(messageXml, previousGpReferenceUrl);
     }
 
     @NotNull
@@ -45,14 +57,23 @@ public class NemsEventParser {
                 extractOdsCode(organizationXml));
     }
 
+    private boolean hasNoGpEntry(XML messageXml) {
+        return messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty();
+    }
+
+    private boolean hasNoPatientEntry(XML messageXml) {
+        return messageXml.nodes("//fhir:Patient").isEmpty();
+    }
+
+    private boolean hasNoFinishedEpisodeOfCare(XML messageXml) {
+        return messageXml.nodes("//fhir:EpisodeOfCare[fhir:status/@value='finished']").isEmpty();
+    }
+
     private String extractPreviousGpUrl(XML messageXml) {
         try {
-            if (messageXml.nodes("//fhir:EpisodeOfCare[fhir:status/@value='finished']").isEmpty()) {
-                log.info("Cannot find EpisodeOfCare with finished status");
-            }
             return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
         } catch (Exception e){
-            throw new NemsEventParseException("Cannot extract previous GP URL Field from EpisodeOfCare");
+            throw new NemsEventParseException("Cannot extract previous GP URL Field from finished EpisodeOfCare");
         }
     }
 
@@ -94,10 +115,6 @@ public class NemsEventParser {
         } catch (Exception e){
             throw new NemsEventParseException("Cannot extract last updated field from Message Header Entry");
         }
-    }
-
-    private boolean hasNoGpEntry(XML messageXml) {
-        return messageXml.nodes("//fhir:Patient/fhir:generalPractitioner").isEmpty();
     }
 
     @NotNull
