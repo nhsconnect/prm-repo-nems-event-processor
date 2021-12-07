@@ -5,6 +5,8 @@ locals {
   unhandled_events_sns_topic_name       = "${var.environment}-nems-event-processor-unhandled-events-sns-topic"
   sns_topic_namespace = "AWS/SNS"
   sns_topic_error_logs_metric_name = "NumberOfNotificationsFailed"
+  queue_size_metric = "NumberOfMessagesSent"
+  sqs_namespace = "AWS/SQS"
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {
@@ -103,7 +105,7 @@ resource "aws_cloudwatch_metric_alarm" "unhandled_events_sns_topic_error_log_ala
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to_acknowledgement" {
   alarm_name                = "${var.environment}-nems-incoming-queue-ratio-of-received-to-acknowledgement"
-  comparison_operator       = "LowerThanOrEqualToThreshold"
+  comparison_operator       = "LessThanOrEqualToThreshold"
   evaluation_periods        = "1"
   threshold                 = "90"
   alarm_description         = "Received message ratio to acknowledgement exceeds %20"
@@ -121,7 +123,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to
 
     metric {
       metric_name = "NumberOfMessagesReceived"
-      namespace   = "AWS/SQS"
+      namespace   = local.sqs_namespace
       period      = "300"
       stat        = "Sum"
       unit        = "Count"
@@ -137,7 +139,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to
 
     metric {
       metric_name = "NumberOfMessagesDeleted"
-      namespace   = "AWS/SQS"
+      namespace   = local.sqs_namespace
       period      = "300"
       stat        = "Sum"
       unit        = "Count"
@@ -147,4 +149,20 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to
       }
     }
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "nems_incoming_dlq" {
+  alarm_name                = "${var.environment}-${var.component_name}-dlq-size"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "0"
+  evaluation_periods        = "1"
+  metric_name               = local.queue_size_metric
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm to alert messages landed dlq"
+  statistic                 = "Maximum"
+  period                    = "300"
+  dimensions = {
+    QueueName = aws_sqs_queue.dlq.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
