@@ -307,7 +307,7 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
+        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from EpisodeOfCare");
     }
 
     @Test

@@ -47,9 +47,12 @@ public class NemsEventParser {
 
     private String extractPreviousGpUrl(XML messageXml) {
         try {
+            if (messageXml.nodes("//fhir:EpisodeOfCare[fhir:status/@value='finished']").isEmpty()) {
+                log.info("Cannot find EpisodeOfCare with finished status");
+            }
             return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
         } catch (Exception e){
-            throw new NemsEventParseException("Cannot extract previous GP URL Field from finished EpisodeOfCare");
+            throw new NemsEventParseException("Cannot extract previous GP URL Field from EpisodeOfCare");
         }
     }
 
