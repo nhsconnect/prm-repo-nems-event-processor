@@ -99,3 +99,52 @@ resource "aws_cloudwatch_metric_alarm" "unhandled_events_sns_topic_error_log_ala
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
+
+
+resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to_acknowledgement" {
+  alarm_name                = "${var.environment}-nems-incoming-queue-ratio-of-received-to-acknowledgement"
+  comparison_operator       = "LowerThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  threshold                 = "90"
+  alarm_description         = "Received message ratio to acknowledgement exceeds %20"
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+
+  metric_query {
+    id          = "e1"
+    expression  = "(acknowledgement+0.1)/(received+0.1)*100"
+    label       = "Expression"
+    return_data = "true"
+  }
+
+  metric_query {
+    id = "received"
+
+    metric {
+      metric_name = "NumberOfMessagesReceived"
+      namespace   = "AWS/SQS"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.incoming_nems_events.name
+      }
+    }
+  }
+
+  metric_query {
+    id = "acknowledgement"
+
+    metric {
+      metric_name = "NumberOfMessagesDeleted"
+      namespace   = "AWS/SQS"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.incoming_nems_events.name
+      }
+    }
+  }
+}
