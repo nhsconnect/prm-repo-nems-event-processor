@@ -20,7 +20,7 @@ import javax.jms.Session;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class SqsConfig {
+public class SqsListenerSpringConfiguration {
 
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventsQueueName;

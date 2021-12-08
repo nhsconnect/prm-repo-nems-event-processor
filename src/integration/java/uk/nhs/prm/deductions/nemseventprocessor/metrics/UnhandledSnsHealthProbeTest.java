@@ -1,8 +1,9 @@
 package uk.nhs.prm.deductions.nemseventprocessor.metrics;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
@@ -17,21 +18,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UnhandledSnsHealthProbeTest {
 
+    @Autowired
+    private SnsClient snsClient;
     static CreateTopicResponse topic;
 
-    @BeforeAll
-    static void setUpTopic() {
+    @BeforeEach
+    void setUpTopic() {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("KmsMasterKeyId", "aws/sns");
 
         String snsTopicName = "integration-test-unhandled-health-probe";
-        topic = SnsClient.create().createTopic(CreateTopicRequest.builder().name(snsTopicName).attributes(attributes).build());
+        topic = snsClient.createTopic(CreateTopicRequest.builder().name(snsTopicName).attributes(attributes).build());
     }
 
     @Test
     void shouldReturnUnhealthyIfCannotQuerySnsTopic() {
         AppConfig config = new AppConfig("int-test", "non-existent-queue", "non-existent-sns-topic", "suspension-non-existent");
-        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config);
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config, snsClient);
 
         assertFalse(unhandledSnsHealthProbe.isHealthy());
     }
@@ -39,13 +42,13 @@ class UnhandledSnsHealthProbeTest {
     @Test
     void shouldReturnHealthyIfCanQuerySnsTopic() {
         AppConfig config = new AppConfig("int-test", "non-existent-queue", topic.topicArn(), "suspension-non-existent");
-        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config);
+        UnhandledSnsHealthProbe unhandledSnsHealthProbe = new UnhandledSnsHealthProbe(config, snsClient);
 
         assertTrue(unhandledSnsHealthProbe.isHealthy());
     }
 
-    @AfterAll
-    static void tearDownTopic() {
-        SnsClient.create().deleteTopic(DeleteTopicRequest.builder().topicArn(topic.topicArn()).build());
+    @AfterEach
+    void tearDownTopic() {
+        snsClient.deleteTopic(DeleteTopicRequest.builder().topicArn(topic.topicArn()).build());
     }
 }
