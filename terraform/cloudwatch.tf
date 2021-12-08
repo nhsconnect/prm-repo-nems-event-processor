@@ -171,7 +171,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_dlq" {
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_age_of_message" {
   alarm_name                = "${var.environment}-${var.component_name}-queue-age-of-message"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "30"
+  threshold                 = "1800"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
