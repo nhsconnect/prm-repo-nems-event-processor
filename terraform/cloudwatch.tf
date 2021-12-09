@@ -179,7 +179,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_age_of_message" {
   statistic                 = "Maximum"
   period                    = "300"
   dimensions = {
-    QueueName = aws_sqs_queue.dlq.name
+    QueueName = aws_sqs_queue.incoming_nems_events.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
