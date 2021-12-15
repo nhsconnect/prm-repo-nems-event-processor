@@ -28,7 +28,7 @@ resource "aws_sqs_queue_policy" "incoming_nems_events_subscription" {
 
 resource "aws_sns_topic" "unhandled_events" {
   name = "${var.environment}-${var.component_name}-unhandled-events-sns-topic"
-  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+  kms_master_key_id = aws_kms_key.unhandled_events.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
