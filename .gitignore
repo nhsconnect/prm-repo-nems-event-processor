@@ -41,6 +41,7 @@ out/
 /terraform/nhs_deployment.tfplan
 /terraform/tf-out.json
 /utils/*
+terraform/.terraform.lock.hcl
 
 # misc
 docker-compose.yaml.dojo
