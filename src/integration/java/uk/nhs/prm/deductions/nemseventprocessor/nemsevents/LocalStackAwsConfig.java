@@ -42,7 +42,7 @@ public class LocalStackAwsConfig {
     private String nemsEventQueueName;
 
     @Bean
-    public AmazonSQSAsync amazonSQSAsync() {
+    public static AmazonSQSAsync amazonSQSAsync() {
         return AmazonSQSAsyncClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localstack:4566", "eu-west-2"))
@@ -50,7 +50,7 @@ public class LocalStackAwsConfig {
     }
 
     @Bean
-    public SnsClient snsClient() {
+    public static SnsClient snsClient() {
         return SnsClient.builder()
                 .endpointOverride(URI.create("http://localstack:4566"))
                 .region(Region.EU_WEST_2)
