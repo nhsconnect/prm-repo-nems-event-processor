@@ -36,6 +36,15 @@ class NemsEventListenerTest {
     }
 
     @Test
+    void whenStringPropertyFailsThenItShouldBeHandledInCatch() throws JMSException {
+        SQSTextMessage message = spy(new SQSTextMessage("payload"));
+        doThrow(new JMSException("error")).when(message).getStringProperty(anyString());
+        nemsEventListener.onMessage(message);
+        verifyNoInteractions(nemsEventService);
+        verify(message, never()).acknowledge();
+    }
+
+    @Test
     @SuppressFBWarnings
     void shouldNotAcknowledgeOrProcessMessageIfJMSReceivingFails() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));

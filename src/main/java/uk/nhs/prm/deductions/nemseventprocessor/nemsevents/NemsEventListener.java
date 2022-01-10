@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
@@ -16,12 +17,12 @@ public class NemsEventListener implements MessageListener {
     private final NemsEventService nemsEventService;
     private final Tracer tracer;
 
-    @SneakyThrows
+
     @Override
     public void onMessage(Message message) {
-        tracer.startMessageTrace(message.getStringProperty("meshMessageId"));
-        log.info("RECEIVED: Nems Event Message");
         try {
+            tracer.startMessageTrace(message.getStringProperty("meshMessageId"));
+            log.info("RECEIVED: Nems Event Message");
             String payload = ((TextMessage) message).getText();
             nemsEventService.processNemsEvent(payload);
             message.acknowledge();
