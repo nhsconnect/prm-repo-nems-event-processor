@@ -26,6 +26,7 @@ resource "aws_sqs_queue_policy" "incoming_nems_events_subscription" {
   policy    = data.aws_iam_policy_document.sqs_nems_event_policy_doc.json
 }
 
+#Unhandled Events Queue
 resource "aws_sns_topic" "unhandled_events" {
   name = "${var.environment}-${var.component_name}-unhandled-events-sns-topic"
   kms_master_key_id = aws_kms_key.unhandled_events.id
@@ -62,6 +63,7 @@ resource "aws_sqs_queue_policy" "unhandled_events_subscription" {
   policy    = data.aws_iam_policy_document.unhandled_events_sns_topic_access_to_queue.json
 }
 
+#Suspensions Queue
 resource "aws_sns_topic" "suspensions" {
   name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
   kms_master_key_id = aws_kms_key.suspensions.id
@@ -133,4 +135,67 @@ resource "aws_sns_topic_subscription" "dlq_sns_topic_to_dlq" {
 resource "aws_sqs_queue_policy" "dlq_subscription" {
   queue_url = aws_sqs_queue.dlq.id
   policy    = data.aws_iam_policy_document.dlq_sns_topic_access_to_queue.json
+}
+
+#Audit DLQ
+resource "aws_sqs_queue" "nems_dlq_audit" {
+  name                       = "${var.environment}-record-continuity-service-nems-dlq-audit"
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-record-continuity-service-nems-dlq-audit"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "dlq_sns_topic_to_nems_dlq_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.dlq.arn
+  endpoint             = aws_sqs_queue.nems_dlq_audit.arn
+}
+
+resource "aws_sqs_queue_policy" "nems_dlq_audit_subscription" {
+  queue_url = aws_sqs_queue.nems_dlq_audit.id
+  policy    = data.aws_iam_policy_document.dlq_sns_topic_access_to_queue.json
+}
+
+
+# Audit Queue
+resource "aws_sns_topic" "nems_audit" {
+  name = "${var.environment}-record-continuity-service-nems-audit-topic"
+  kms_master_key_id = aws_kms_key.nems_audit.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-record-continuity-service-nems-audit-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "nems_audit" {
+  name                       = "${var.environment}-record-continuity-service-nems-audit"
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.nems_audit.id
+
+  tags = {
+    Name = "${var.environment}-record-continuity-service-nems-audit"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "nems_audit_sns_topic_to_dlq" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.nems_audit.arn
+  endpoint             = aws_sqs_queue.nems_audit.arn
+}
+
+resource "aws_sqs_queue_policy" "nems_audit_subscription" {
+  queue_url = aws_sqs_queue.nems_audit.id
+  policy    = data.aws_iam_policy_document.nems_audit_sns_topic_access_to_queue.json
 }

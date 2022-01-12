@@ -58,6 +58,22 @@ resource "aws_kms_alias" "unhandled_events" {
   target_key_id = aws_kms_key.unhandled_events.id
 }
 
+resource "aws_kms_key" "nems_audit" {
+  description = "Custom KMS Key to enable server side encryption continuity nems audit"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-nems-audit-encryption-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "nems_audit" {
+  name          = "alias/nems-audit-kms-key"
+  target_key_id = aws_kms_key.nems_audit.id
+}
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"

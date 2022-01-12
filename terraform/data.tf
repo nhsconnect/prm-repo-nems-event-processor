@@ -143,12 +143,37 @@ data "aws_iam_policy_document" "dlq_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.dlq.arn
+      aws_sqs_queue.dlq.arn, aws_sqs_queue.nems_dlq_audit.arn
     ]
 
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.dlq.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "nems_audit_sns_topic_access_to_queue" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.nems_audit.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.nems_audit.arn]
       variable = "aws:SourceArn"
     }
   }
