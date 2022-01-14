@@ -16,13 +16,14 @@ public class NemsEventParser {
     private final NemsEventValidator validator;
 
     public NemsEventMessage parse(final String messageBody) {
-        try {
-            log.info("Parsing message");
-            return tryToParse(messageBody);
-        } catch (RuntimeException exception) {
-            log.info("Failed to parse NEMS event message: " + exception.getMessage());
-            throw new NemsEventParseException(exception);
-        }
+        log.info("Parsing message");
+        return tryToParse(messageBody);
+    }
+
+    public String extractNemsMessageIdFromStringBody(String messageBody) {
+        log.info("Extracting nems message id to send to audit");
+        final XML messageXml = parseMessageXML(messageBody);
+        return extractNemsMessageId(messageXml);
     }
 
     @NotNull
@@ -112,8 +113,16 @@ public class NemsEventParser {
     private String extractWhenLastUpdated(XML messageXml) {
         try {
             return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new NemsEventParseException("Cannot extract last updated field from Message Header Entry");
+        }
+    }
+
+    private String extractNemsMessageId(XML messageXml) {
+        try {
+            return query(messageXml, "//fhir:MessageHeader/fhir:id/@value");
+        } catch (Exception e) {
+            throw new NemsEventParseException("Cannot extract nems message id from Message Header Entry");
         }
     }
 

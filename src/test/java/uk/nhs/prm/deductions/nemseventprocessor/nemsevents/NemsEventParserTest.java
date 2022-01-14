@@ -37,9 +37,10 @@ class NemsEventParserTest {
                     "        </resource>\n" +
                     "    </entry>\n";
 
-    public static final String LAST_UPDATED = "   <entry>\n" +
+    public static final String MESSAGE_HEADERS = "   <entry>\n" +
             "        <resource>\n" +
             "            <MessageHeader>\n" +
+            "                <id value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>" +
             "                <meta>\n" +
             "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
             "                </meta>\n" +
@@ -94,7 +95,7 @@ class NemsEventParserTest {
     @Test
     void shouldParseANemsMessageAsASuspensionWhenGPFieldIsMissing() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
@@ -109,7 +110,7 @@ class NemsEventParserTest {
     @Test
     void shouldParseANemsMessageAsANonSuspensionWhenGPFieldIsPresentInThePatientSection() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITH_CURRENT_GP +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
@@ -123,7 +124,7 @@ class NemsEventParserTest {
     @Test
     void shouldParseNhsNumberFromANemsMessagePatientEntry() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
@@ -153,7 +154,7 @@ class NemsEventParserTest {
     @Test
     void shouldParseANemsMessageAsASuspensionWhenGPFieldIsPresentOnlyInNonPatientEntriesInTheMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "    <entry>\n" +
                 "        <resource>\n" +
@@ -201,7 +202,7 @@ class NemsEventParserTest {
     @Test
     void shouldExtractGPPracticeURLFieldWhenParsingASuspensionMessage() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -232,6 +233,19 @@ class NemsEventParserTest {
         assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
     }
 
+    @Test
+    void shouldExtractMessageIdFromMessageHeaders() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+            MESSAGE_HEADERS +
+            PATIENT_ENTRY_WITH_CURRENT_GP +
+            EPISODE_OF_CARE +
+            PREVIOUS_GP_ORGANIZATION +
+            "</Bundle>";
+
+        String actual = nemsEventParser.extractNemsMessageIdFromStringBody(messageBody);
+        assertThat(actual).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
+    }
+
     //ERROR CASES
 
     @Test
@@ -253,7 +267,7 @@ class NemsEventParserTest {
     @Test
     void shouldFailToParseIfThereIsMoreThanOnePatientEntry() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 EPISODE_OF_CARE +
@@ -266,7 +280,7 @@ class NemsEventParserTest {
     @Test
     void shouldThrowAnErrorWhenCannotExtractNhsNumberFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
@@ -283,13 +297,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract NHS Number from Patient Details Entry");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract NHS Number from Patient Details Entry");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotExtractPreviousGpUrlFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -307,13 +321,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotExtractFinishedEpisodeOfCare() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+                MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -331,13 +345,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find EpisodeOfCare with finished status");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot find EpisodeOfCare with finished status");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotExtractPreviousGpOdsCodeFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+            MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -362,7 +376,7 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract previous GP ODS Code");
     }
 
     @Test
@@ -385,13 +399,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotFindMatchingGpUrl(){
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+            MESSAGE_HEADERS +
                 PATIENT_ENTRY_WITHOUT_CURRENT_GP +
                 "   <entry>\n" +
                 "        <resource>\n" +
@@ -409,13 +423,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find entry for Organization with previous GP ODS code");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot find entry for Organization with previous GP ODS code");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotExtractNhsNumberVerificationValue(){
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+            MESSAGE_HEADERS +
                 PREVIOUS_GP_ORGANIZATION +
                 EPISODE_OF_CARE +
                 "    <entry>\n" +
@@ -437,13 +451,13 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot extract nhs number verification value from Patient Details Entry");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract nhs number verification value from Patient Details Entry");
     }
 
     @Test
     void shouldThrowAnErrorWhenCannotExtractPatientFromNemsEvent() {
         String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                LAST_UPDATED +
+            MESSAGE_HEADERS +
                 EPISODE_OF_CARE +
                 PREVIOUS_GP_ORGANIZATION +
                 "</Bundle>";
@@ -452,6 +466,31 @@ class NemsEventParserTest {
             nemsEventParser.parse(messageBody);
         });
 
-        assertThat(nemsEventParseException.getCause().getMessage()).contains("NemsEventParseException: Cannot find Patient Details entry - invalid message");
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot find Patient Details entry - invalid message");
+    }
+
+    @Test
+    void shouldThrowAParseExceptionWhenInvalidXMLWhenExtractingNemsId() {
+        assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.extractNemsMessageIdFromStringBody("<anyOldMessage></anyOldMessage>");
+        });
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractNemsMessageId() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+            "   <entry>\n" +
+            "        <resource>\n" +
+            "            <MessageHeader>\n" +
+            "            </MessageHeader>\n" +
+            "        </resource>\n" +
+            "    </entry>" +
+            "</Bundle>";
+
+        NemsEventParseException nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.extractNemsMessageIdFromStringBody(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getMessage()).contains("Cannot extract nems message id from Message Header Entry");
     }
 }

@@ -10,6 +10,7 @@ locals {
     { name = "UNHANDLED_EVENTS_SNS_TOPIC_ARN", value = aws_sns_topic.unhandled_events.arn },
     { name = "SUSPENSIONS_SNS_TOPIC_ARN", value = aws_sns_topic.suspensions.arn },
     { name = "DEAD_LETTER_QUEUE_SNS_TOPIC_ARN", value = aws_sns_topic.dlq.arn },
+    { name = "NEMS_EVENTS_AUDIT_SNS_TOPIC_ARN", value = aws_sns_topic.nems_audit.arn },
     { name = "NEMS_EVENTS_QUEUE_NAME", value = aws_sqs_queue.incoming_nems_events.name }
   ]
 }

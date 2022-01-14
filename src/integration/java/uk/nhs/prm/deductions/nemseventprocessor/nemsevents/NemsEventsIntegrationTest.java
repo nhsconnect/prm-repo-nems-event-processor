@@ -3,6 +3,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +12,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessage;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE;
 import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.SUSPENSIONS_TEST_RECEIVING_QUEUE;
 import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE;
 
@@ -34,10 +35,23 @@ class NemsEventsIntegrationTest {
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventQueueName;
 
+    private static final String NEMS_MESSAGE_ID = "3cfdf880-13e9-4f6b-8299-53e96ef5ec02";
+
     @Test
-    void shouldSendNonSuspensionNemsEventMessageToUnhandledTopic() {
+    void shouldSendNonSuspensionNemsEventMessageToUnhandledTopicAndAuditQueue() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
         String nonSuspensionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                "    <entry>\n" +
+            "        <fullUrl value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>\n" +
+                "        <resource>\n" +
+                "            <MessageHeader>\n" +
+                "                <id value=\"" + NEMS_MESSAGE_ID + "\"/>\n" +
+                "                <meta>\n" +
+                "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
+                "                </meta>\n" +
+                "            </MessageHeader>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
                 "    <entry>\n" +
                 "        <resource>\n" +
                 "            <Patient>\n" +
@@ -51,23 +65,27 @@ class NemsEventsIntegrationTest {
                 "</Bundle>";
         amazonSQSAsync.sendMessage(queueUrl, nonSuspensionMessageBody);
 
+        validateAuditMessageReceived(nonSuspensionMessageBody);
+
         String receiving = amazonSQSAsync.getQueueUrl(UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
-        Message[] receivedMessageHolder = new Message[1];
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             System.out.println("checking sqs queue: " + receiving);
-            ReceiveMessageRequest requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
-            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour).getMessages();
+            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
+            List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
             System.out.println("messages: " + messages.size());
             assertThat(messages).hasSize(1);
-            receivedMessageHolder[0] = messages.get(0);
-            System.out.println("message: " + messages.get(0).getBody());
-            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
-            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
+            Message receivedMessage = messages.get(0);
+
+            System.out.println("message: " + receivedMessage.getBody());
+            System.out.println("message attributes: " + receivedMessage.getMessageAttributes());
+            System.out.println("message attributes empty: " + receivedMessage.getMessageAttributes().isEmpty());
+
+            assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
+            assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
+            assertThat(receivedMessage.getBody()).contains(nonSuspensionMessageBody);
         });
-        assertFalse(receivedMessageHolder[0].getMessageAttributes().isEmpty());
-        assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
-        assertTrue(receivedMessageHolder[0].getBody().contains(nonSuspensionMessageBody));
+
     }
 
     @Test
@@ -84,6 +102,7 @@ class NemsEventsIntegrationTest {
                 "        <fullUrl value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>\n" +
                 "        <resource>\n" +
                 "            <MessageHeader>\n" +
+            "                    <id value=\"" + NEMS_MESSAGE_ID + "\"/>\n" +
                 "                <meta>\n" +
                 "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
                 "                </meta>\n" +
@@ -135,20 +154,45 @@ class NemsEventsIntegrationTest {
 
         String receiving = amazonSQSAsync.getQueueUrl(SUSPENSIONS_TEST_RECEIVING_QUEUE).getQueueUrl();
 
-        Message[] receivedMessageHolder = new Message[1];
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             System.out.println("checking sqs queue: " + receiving);
-            ReceiveMessageRequest requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
-            List<Message> messages = amazonSQSAsync.receiveMessage(requestForMessagesWithAttributesAsHavingToExplicitlyAskForThemIsApparentlyTheMostObviousBehaviour).getMessages();
+            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
+            List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
             System.out.println("messages: " + messages.size());
             assertThat(messages).hasSize(1);
-            receivedMessageHolder[0] = messages.get(0);
-            System.out.println("message: " + messages.get(0).getBody());
-            System.out.println("message attributes: " + messages.get(0).getMessageAttributes());
-            System.out.println("message attributes empty: " + messages.get(0).getMessageAttributes().isEmpty());
+            Message receivedMessage = messages.get(0);
+
+            System.out.println("message: " + receivedMessage.getBody());
+            System.out.println("message attributes: " + receivedMessage.getMessageAttributes());
+            System.out.println("message attributes empty: " + receivedMessage.getMessageAttributes().isEmpty());
+
+            assertThat(receivedMessage.getBody()).contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}");
+            assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
+            assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
         });
-        assertFalse(receivedMessageHolder[0].getMessageAttributes().isEmpty());
-        assertTrue(receivedMessageHolder[0].getMessageAttributes().containsKey("traceId"));
-        assertTrue(receivedMessageHolder[0].getBody().contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}"));
+
+        validateAuditMessageReceived(suspensionMessageBody);
+
+        }
+
+        private void validateAuditMessageReceived(String messageBody) {
+            String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE).getQueueUrl();
+
+            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+                System.out.println("checking sqs queue: " + auditReceiving);
+                ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(auditReceiving).withMessageAttributeNames("traceId");
+                List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
+                System.out.println("messages: " + messages.size());
+                assertThat(messages).hasSize(1);
+                Message receivedMessage = messages.get(0);
+
+                System.out.println("message: " + receivedMessage.getBody());
+
+                AuditMessage receivedAuditMessage = new ObjectMapper().readValue(receivedMessage.getBody(), AuditMessage.class);
+
+                assertThat(receivedAuditMessage.getNemsMessageId()).isEqualTo(NEMS_MESSAGE_ID);
+                assertThat(receivedAuditMessage.getMessageBody()).isEqualTo(messageBody);
+            });
+
     }
 }
