@@ -15,6 +15,7 @@ public class Tracer {
     public static final String NEMS_MESSAGE_ID = "nemsMessageId";
 
     public String startMessageTrace(String originalMessageId) {
+        clearMDCContext();
         String traceIdUUID = UUID.randomUUID().toString();
         String traceIdHex = traceIdUUID.replaceAll("-", "");
         MDC.put(TRACE_ID, traceIdHex);
@@ -34,4 +35,9 @@ public class Tracer {
         return MDC.get(NEMS_MESSAGE_ID);
     }
 
+    private void clearMDCContext() {
+        MDC.remove(TRACE_ID);
+        MDC.remove(MESH_MESSAGE_ID);
+        MDC.remove(NEMS_MESSAGE_ID);
+    }
 }
