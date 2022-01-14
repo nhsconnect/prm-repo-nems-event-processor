@@ -181,6 +181,7 @@ class NemsEventParserTest {
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <MessageHeader>\n" +
+                "                <id value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>" +
                 "                <meta>\n" +
                 "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
                 "                </meta>\n" +
@@ -231,6 +232,36 @@ class NemsEventParserTest {
 
         assertTrue(message.isSuspension());
         assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
+    }
+
+    @Test
+    void shouldExtractNemsMessageIdForASuspensionMessage() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+            MESSAGE_HEADERS +
+            PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+            EPISODE_OF_CARE +
+            PREVIOUS_GP_ORGANIZATION +
+            "</Bundle>";
+
+        NemsEventMessage message = nemsEventParser.parse(messageBody);
+
+        assertTrue(message.isSuspension());
+        assertThat(message.exposeSensitiveData().get("nemsMessageId")).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
+    }
+
+    @Test
+    void shouldExtractNemsMessageIdForANonSuspensionMessage() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+            MESSAGE_HEADERS +
+            PATIENT_ENTRY_WITH_CURRENT_GP +
+            EPISODE_OF_CARE +
+            PREVIOUS_GP_ORGANIZATION +
+            "</Bundle>";
+
+        NemsEventMessage message = nemsEventParser.parse(messageBody);
+
+        assertFalse(message.isSuspension());
+        assertThat(message.exposeSensitiveData().get("nemsMessageId")).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
     }
 
     @Test
@@ -385,6 +416,7 @@ class NemsEventParserTest {
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <MessageHeader>\n" +
+                "                <id value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>" +
                 "                <meta>\n" +
                 "                </meta>\n" +
                 "            </MessageHeader>\n" +
@@ -400,6 +432,30 @@ class NemsEventParserTest {
         });
 
         assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractNemsEventIdValueFromNemsEvent() {
+        String messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+            "   <entry>\n" +
+            "        <resource>\n" +
+            "            <MessageHeader>\n" +
+            "                <meta>\n" +
+            "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
+            "                </meta>\n" +
+            "            </MessageHeader>\n" +
+            "        </resource>\n" +
+            "    </entry>" +
+            PATIENT_ENTRY_WITHOUT_CURRENT_GP +
+            EPISODE_OF_CARE +
+            PREVIOUS_GP_ORGANIZATION +
+            "</Bundle>";
+
+        Throwable nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract nems message id from Message Header Entry");
     }
 
     @Test

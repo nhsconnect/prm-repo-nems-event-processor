@@ -30,6 +30,8 @@ public class NemsEventParser {
     private NemsEventMessage tryToParse(String messageBody) {
         final XML messageXml = parseMessageXML(messageBody);
 
+        String nemsMessageId = extractNemsMessageId(messageXml);
+
         if (hasNoPatientEntry(messageXml)) {
             throw new NemsEventParseException("Cannot find Patient Details entry - invalid message");
         }
@@ -37,10 +39,10 @@ public class NemsEventParser {
             log.info("NEMS event has no current GP");
             final XML organizationXml = getOrganizationXml(messageXml);
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
-            return createSuspensionMessage(messageXml, organizationXml);
+            return createSuspensionMessage(messageXml, organizationXml, nemsMessageId);
         }
 
-        return NemsEventMessage.nonSuspension();
+        return NemsEventMessage.nonSuspension(nemsMessageId);
     }
 
     private XML getOrganizationXml(XML messageXml) {
@@ -52,10 +54,10 @@ public class NemsEventParser {
     }
 
     @NotNull
-    private NemsEventMessage createSuspensionMessage(final XML messageXml, XML organizationXml) {
+    private NemsEventMessage createSuspensionMessage(final XML messageXml, XML organizationXml, String nemsMessageId) {
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
-                extractOdsCode(organizationXml));
+                extractOdsCode(organizationXml),nemsMessageId);
     }
 
     private boolean hasNoGpEntry(XML messageXml) {

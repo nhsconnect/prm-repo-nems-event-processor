@@ -18,7 +18,7 @@ public class AuditEventPublisher {
     }
 
     public void sendMessage(AuditMessage auditMessage) {
-        log.info("Publisher nems event id to " + nemsEventsAuditTopicArn);
+        log.info("Publishing nems event to audit");
         messagePublisher.sendMessage(nemsEventsAuditTopicArn, auditMessage.toJsonString());
     }
 }

@@ -15,11 +15,9 @@ public class AuditService {
     private final NemsEventParser nemsEventParser;
     private final AuditEventPublisher auditEventPublisher;
 
-    public String extractNemsMessageIdAndPublishAuditMessage(String messageBody) {
+    public void extractNemsMessageIdAndPublishAuditMessage(String messageBody) {
         String nemsMessageId = nemsEventParser.extractNemsMessageIdFromStringBody(messageBody);
-        log.info("Id extracted: " + nemsMessageId);
         tracer.setNemsMessageId(nemsMessageId);
         auditEventPublisher.sendMessage(new AuditMessage(nemsMessageId, messageBody));
-        return nemsMessageId;
     }
 }

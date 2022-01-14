@@ -28,7 +28,7 @@ public class NemsEventService {
             NemsEventMessage parsedMessage = parser.parse(message);
             if (parsedMessage.isSuspension()) {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
-                suspensionsEventPublisher.sendMessage(toJson(parsedMessage.exposeSensitiveData()));
+                suspensionsEventPublisher.sendMessage(parsedMessage);
                 return;
             }
             log.info("NON-SUSPENSION event - sending to unhandled sns topic");
@@ -38,9 +38,5 @@ public class NemsEventService {
             log.info("PROCESSING FAILED - sending to dead letter sns topic. REASON - {}", e.getMessage());
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
-    }
-
-    private String toJson(Map<String, String> data) {
-        return new Gson().toJson(data);
     }
 }

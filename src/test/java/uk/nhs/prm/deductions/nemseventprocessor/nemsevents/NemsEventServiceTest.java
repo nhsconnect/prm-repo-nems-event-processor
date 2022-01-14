@@ -32,7 +32,7 @@ class NemsEventServiceTest {
 
     @Test
     void shouldPublishNonSuspensionsToTheUnhandledQueue() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonSuspension());
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonSuspension("1234567"));
         String unhandledNemsEvent = "unhandledNemsEvent";
         nemsEventService.processNemsEvent(unhandledNemsEvent);
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(unhandledNemsEvent);
@@ -41,16 +41,17 @@ class NemsEventServiceTest {
 
     @Test
     void shouldPublishToSuspensionsTopicWhenMessageIsSuspension() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("111", "2023-01-01", "B12345"));
+        NemsEventMessage nemsEventMessage = NemsEventMessage.suspension("111", "2023-01-01", "B12345", "123456");
+        when(nemsEventParser.parse(anyString())).thenReturn(nemsEventMessage);
         String message = "a suspension";
         nemsEventService.processNemsEvent(message);
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
-        verify(suspensionsEventPublisher).sendMessage("{\"lastUpdated\":\"2023-01-01\",\"previousOdsCode\":\"B12345\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"111\"}");
+        verify(suspensionsEventPublisher).sendMessage(nemsEventMessage);
     }
 
     @Test
     void shouldNotPublishToUnhandledTopicWhenMessageIsSuspension() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("222", "2022-10-21", "A34564"));
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("222", "2022-10-21", "A34564", "123456"));
         String message = "not sent to unhandled";
         nemsEventService.processNemsEvent(message);
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);

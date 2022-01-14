@@ -166,7 +166,8 @@ class NemsEventsIntegrationTest {
             System.out.println("message attributes: " + receivedMessage.getMessageAttributes());
             System.out.println("message attributes empty: " + receivedMessage.getMessageAttributes().isEmpty());
 
-            assertThat(receivedMessage.getBody()).contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\",\"eventType\":\"SUSPENSION\",\"nhsNumber\":\"9912003888\"}");
+            assertThat(receivedMessage.getBody()).contains("{\"lastUpdated\":\"2017-11-01T15:00:33+00:00\",\"previousOdsCode\":\"B85612\"," +
+                "\"eventType\":\"SUSPENSION\",\"nemsMessageId\":\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\",\"nhsNumber\":\"9912003888\"}");
             assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
         });

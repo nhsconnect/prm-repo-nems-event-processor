@@ -33,12 +33,11 @@ class AuditServiceTest {
         String nemsMessageId = "someMessageId";
         when(nemsEventParser.extractNemsMessageIdFromStringBody(messageBody)).thenReturn(nemsMessageId);
 
-        String actual = auditService.extractNemsMessageIdAndPublishAuditMessage(messageBody);
+        auditService.extractNemsMessageIdAndPublishAuditMessage(messageBody);
 
         AuditMessage expectedPayload = new AuditMessage(nemsMessageId, messageBody);
 
         verify(tracer).setNemsMessageId(nemsMessageId);
         verify(auditEventPublisher).sendMessage(expectedPayload);
-        assertThat(actual).isEqualTo(nemsMessageId);
     }
 }
