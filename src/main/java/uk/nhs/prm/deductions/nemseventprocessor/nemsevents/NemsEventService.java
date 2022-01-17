@@ -1,6 +1,5 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
-import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,8 +7,6 @@ import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
-
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -35,7 +32,7 @@ public class NemsEventService {
             unhandledEventPublisher.sendMessage(message, "Non-suspension");
         }
         catch (Exception e) {
-                log.info("PROCESSING FAILED - sending to dead letter sns topic.");
+                log.info("PROCESSING FAILED - sending to dead letter sns topic.", e);
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
     }
