@@ -139,12 +139,12 @@ resource "aws_sqs_queue_policy" "dlq_subscription" {
 
 #Audit DLQ
 resource "aws_sqs_queue" "nems_dlq_audit" {
-  name                       = "${var.environment}-record-continuity-service-nems-dlq-audit"
+  name                       = "${var.environment}-nems-event-processor-dlq-audit"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-record-continuity-service-nems-dlq-audit"
+    Name = "${var.environment}-nems-event-processor-dlq-audit"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -165,24 +165,24 @@ resource "aws_sqs_queue_policy" "nems_dlq_audit_subscription" {
 
 # Audit Queue
 resource "aws_sns_topic" "nems_audit" {
-  name = "${var.environment}-record-continuity-service-nems-audit-topic"
+  name = "${var.environment}-nems-event-processor-incoming-audit-topic"
   kms_master_key_id = aws_kms_key.nems_audit.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
-    Name = "${var.environment}-record-continuity-service-nems-audit-topic"
+    Name = "${var.environment}-nems-event-processor-incoming-audit-topic"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "nems_audit" {
-  name                       = "${var.environment}-record-continuity-service-nems-audit"
+  name                       = "${var.environment}-nems-event-processor-incoming-audit"
   message_retention_seconds  = 1209600
   kms_master_key_id = aws_kms_key.nems_audit.id
 
   tags = {
-    Name = "${var.environment}-record-continuity-service-nems-audit"
+    Name = "${var.environment}-nems-event-processor-incoming-audit"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
