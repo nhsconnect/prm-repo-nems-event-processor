@@ -47,6 +47,10 @@ public class NemsEventMessage implements HasSensitiveData {
         return sensitiveData;
     }
 
+    public String getNemsMessageId() {
+        return this.nemsMessageId;
+    }
+
     public String toJsonString() {
         return new Gson().toJson(this.exposeSensitiveData());
     }

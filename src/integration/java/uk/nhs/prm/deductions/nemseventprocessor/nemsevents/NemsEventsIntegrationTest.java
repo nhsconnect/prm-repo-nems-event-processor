@@ -83,7 +83,7 @@ class NemsEventsIntegrationTest {
 
             assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
-            assertThat(receivedMessage.getBody()).contains(nonSuspensionMessageBody);
+            assertThat(receivedMessage.getBody()).isEqualTo("{\"nemsMessageId\":\"" + NEMS_MESSAGE_ID + "\",\"messageStatus\":\"NO_ACTION:NON_SUSPENSION\"}");
         });
 
     }

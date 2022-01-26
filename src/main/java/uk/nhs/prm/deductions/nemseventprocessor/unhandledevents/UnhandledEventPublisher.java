@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.nemseventprocessor.MessagePublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NonSuspendedMessage;
 
 @Component
 @Slf4j
@@ -16,7 +17,7 @@ public class UnhandledEventPublisher {
         this.unhandledEventsSnsTopicArn = unhandledEventsSnsTopicArn;
     }
 
-    public void sendMessage(String message, String reasonUnhandled) {
-        messagePublisher.sendMessage(this.unhandledEventsSnsTopicArn, message, "reasonUnhandled", reasonUnhandled);
+    public void sendMessage(NonSuspendedMessage message, String reasonUnhandled) {
+        messagePublisher.sendMessage(this.unhandledEventsSnsTopicArn, message.toJsonString(), "reasonUnhandled", reasonUnhandled);
     }
 }

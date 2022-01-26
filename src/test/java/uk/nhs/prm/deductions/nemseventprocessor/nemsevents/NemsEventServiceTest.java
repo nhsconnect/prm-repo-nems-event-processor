@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessageStatus;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
@@ -12,6 +13,7 @@ import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPu
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessageStatus.NO_ACTION_NON_SUSPENSION;
 
 @ExtendWith(MockitoExtension.class)
 class NemsEventServiceTest {
@@ -32,11 +34,13 @@ class NemsEventServiceTest {
 
     @Test
     void shouldPublishNonSuspensionsToTheUnhandledQueue() {
-        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonSuspension("1234567"));
+        String nemsMessageId = "1234567";
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.nonSuspension(nemsMessageId));
         String unhandledNemsEvent = "unhandledNemsEvent";
         nemsEventService.processNemsEvent(unhandledNemsEvent);
+        NonSuspendedMessage expectedMessage = new NonSuspendedMessage(nemsMessageId, NO_ACTION_NON_SUSPENSION);
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(unhandledNemsEvent);
-        verify(unhandledEventPublisher).sendMessage(unhandledNemsEvent, "Non-suspension");
+        verify(unhandledEventPublisher).sendMessage(expectedMessage, "Non-suspension");
     }
 
     @Test
