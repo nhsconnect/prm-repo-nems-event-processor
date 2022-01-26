@@ -65,7 +65,7 @@ data "aws_iam_policy_document" "unhandled_events_sns_topic_access_to_queue" {
     }
 
     resources = [
-      aws_sqs_queue.unhandled_events.arn
+      aws_sqs_queue.unhandled_events.arn, aws_sqs_queue.unhandled_audit.arn
     ]
 
     condition {

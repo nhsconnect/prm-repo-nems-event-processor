@@ -1,10 +1,12 @@
 locals {
   incoming_queue_name = "${var.environment}-${var.component_name}-incoming-queue"
+  max_retention_period = 1209600
+  thirty_minute_retention_period = 1800
 }
 
 resource "aws_sqs_queue" "incoming_nems_events" {
   name                       = local.incoming_queue_name
-  message_retention_seconds  = 1800
+  message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
@@ -41,7 +43,7 @@ resource "aws_sns_topic" "unhandled_events" {
 
 resource "aws_sqs_queue" "unhandled_events" {
   name                       = "${var.environment}-${var.component_name}-unhandled-events-queue"
-  message_retention_seconds  = 1800
+  message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
@@ -63,6 +65,30 @@ resource "aws_sqs_queue_policy" "unhandled_events_subscription" {
   policy    = data.aws_iam_policy_document.unhandled_events_sns_topic_access_to_queue.json
 }
 
+resource "aws_sqs_queue" "unhandled_audit" {
+  name                       = "${var.environment}-${var.component_name}-unhandled-audit"
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-unhandled-audit"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "unhandled_topic_to_audit_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.unhandled_events.arn
+  endpoint             = aws_sqs_queue.unhandled_audit.arn
+}
+
+resource "aws_sqs_queue_policy" "unhandled_audit_subscription" {
+  queue_url = aws_sqs_queue.unhandled_audit.id
+  policy    = data.aws_iam_policy_document.unhandled_events_sns_topic_access_to_queue.json
+}
+
 #Suspensions Queue
 resource "aws_sns_topic" "suspensions" {
   name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
@@ -78,7 +104,7 @@ resource "aws_sns_topic" "suspensions" {
 
 resource "aws_sqs_queue" "suspensions_observability" {
   name                       = "${var.environment}-${var.component_name}-suspensions-observability-queue"
-  message_retention_seconds  = 1800
+  message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
@@ -115,7 +141,7 @@ resource "aws_sns_topic" "dlq" {
 
 resource "aws_sqs_queue" "dlq" {
   name                       = "${var.environment}-${var.component_name}-dlq"
-  message_retention_seconds  = 1800
+  message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
@@ -140,7 +166,7 @@ resource "aws_sqs_queue_policy" "dlq_subscription" {
 #Audit DLQ
 resource "aws_sqs_queue" "nems_dlq_audit" {
   name                       = "${var.environment}-nems-event-processor-dlq-audit"
-  message_retention_seconds  = 1209600
+  message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
@@ -178,7 +204,7 @@ resource "aws_sns_topic" "nems_audit" {
 
 resource "aws_sqs_queue" "nems_audit" {
   name                       = "${var.environment}-nems-event-processor-incoming-audit"
-  message_retention_seconds  = 1209600
+  message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
 
   tags = {
