@@ -43,6 +43,7 @@ function get_aws_account_id {
 
 function configure_local_envs {
   export AWS_REGION=${AWS_DEFAULT_REGION}
+  export LOCALSTACK_URL="http://localstack:4566"
 }
 
 #######################
@@ -173,6 +174,9 @@ case "${command}" in
   run_local)
       configure_local_envs
       ./gradlew bootRun
+      ;;
+  run_localstack_local)
+      docker-compose -f docker-compose.local-int-test.yaml up -d
       ;;
   _dep)
       gradle dependencyCheckAnalyze

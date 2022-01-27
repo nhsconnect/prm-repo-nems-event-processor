@@ -2,8 +2,10 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,7 @@ class NemsEventsIntegrationTest {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
         String nonSuspensionMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "    <entry>\n" +
-            "        <fullUrl value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>\n" +
+                "        <fullUrl value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>\n" +
                 "        <resource>\n" +
                 "            <MessageHeader>\n" +
                 "                <id value=\"" + NEMS_MESSAGE_ID + "\"/>\n" +
@@ -83,9 +85,11 @@ class NemsEventsIntegrationTest {
 
             assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
-            assertThat(receivedMessage.getBody()).isEqualTo("{\"nemsMessageId\":\"" + NEMS_MESSAGE_ID + "\",\"messageStatus\":\"NO_ACTION:NON_SUSPENSION\"}");
+            assertThat(receivedMessage.getBody()).isEqualTo(
+                "{\"nemsMessageId\":\"" + NEMS_MESSAGE_ID + "\",\"messageStatus\":\"NO_ACTION:NON_SUSPENSION\"}");
         });
 
+        purgeQueue(receiving);
     }
 
     @Test
@@ -173,27 +177,33 @@ class NemsEventsIntegrationTest {
         });
 
         validateAuditMessageReceived(suspensionMessageBody);
-
+        purgeQueue(receiving);
         }
 
-        private void validateAuditMessageReceived(String messageBody) {
-            String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE).getQueueUrl();
+    private void validateAuditMessageReceived(String messageBody) {
+        String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE).getQueueUrl();
 
-            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                System.out.println("checking sqs queue: " + auditReceiving);
-                ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(auditReceiving).withMessageAttributeNames("traceId");
-                List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
-                System.out.println("messages: " + messages.size());
-                assertThat(messages).hasSize(1);
-                Message receivedMessage = messages.get(0);
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            System.out.println("checking sqs queue: " + auditReceiving);
+            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(auditReceiving).withMessageAttributeNames("traceId");
+            List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
+            System.out.println("messages: " + messages.size());
+            assertThat(messages).hasSize(1);
+            Message receivedMessage = messages.get(0);
 
-                System.out.println("message: " + receivedMessage.getBody());
+            System.out.println("message: " + receivedMessage.getBody());
 
-                AuditMessage receivedAuditMessage = new ObjectMapper().readValue(receivedMessage.getBody(), AuditMessage.class);
+            AuditMessage receivedAuditMessage = new ObjectMapper().readValue(receivedMessage.getBody(), AuditMessage.class);
 
-                assertThat(receivedAuditMessage.getNemsMessageId()).isEqualTo(NEMS_MESSAGE_ID);
-                assertThat(receivedAuditMessage.getMessageBody()).isEqualTo(messageBody);
-            });
+            assertThat(receivedAuditMessage.getNemsMessageId()).isEqualTo(NEMS_MESSAGE_ID);
+            assertThat(receivedAuditMessage.getMessageBody()).isEqualTo(messageBody);
+        });
 
+        purgeQueue(auditReceiving);
+    }
+
+    private void purgeQueue(String queueUrl) {
+        System.out.println("Purging queue url: " + queueUrl);
+        amazonSQSAsync.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }
