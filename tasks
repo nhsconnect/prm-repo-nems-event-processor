@@ -176,7 +176,7 @@ case "${command}" in
       ./gradlew bootRun
       ;;
   run_localstack_local)
-      docker-compose -f docker-compose.local-int-test.yaml up -d
+      docker-compose -f docker-compose.localstack-local.yaml up -d
       ;;
   _dep)
       gradle dependencyCheckAnalyze
