@@ -31,4 +31,22 @@ class AuditEventPublisherTest {
         verify(messagePublisher).sendMessage(auditTopicArn, auditMessageAsString);
     }
 
+    @Test
+    void shouldPublishNEMSAuditTopicAndNotEscapeHtmlCharacters() {
+        String auditTopicArn = "auditTopicArn";
+        AuditEventPublisher publisher = new AuditEventPublisher(messagePublisher, auditTopicArn);
+
+        String messageBody = "<someBody>";
+        AuditMessage auditMessage = new AuditMessage("someId",messageBody);
+
+        publisher.sendMessage(auditMessage);
+
+        String auditMessageAsString = "{" +
+            "\"nemsMessageId\":\"someId\"," +
+            "\"messageBody\":\""+ messageBody + "\"" +
+            "}";
+
+        verify(messagePublisher).sendMessage(auditTopicArn, auditMessageAsString);
+    }
+
 }
