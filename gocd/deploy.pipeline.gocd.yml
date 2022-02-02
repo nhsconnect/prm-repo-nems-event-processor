@@ -88,3 +88,22 @@ pipelines:
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
     stages: *common_stages
+
+  'prm-deductions-nems-event-processor.prod':
+    group: continuity-service
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+      app:
+        pipeline: prm-deductions-nems-event-processor
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_prod
+      test_env:
+        pipeline: prm-deductions-nems-event-processor.pre-prod
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: prod
+    stages: *common_stages
