@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.SUSPENSIONS_TEST_RECEIVING_QUEUE;
-import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE;
+import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsConfig.*;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -174,11 +171,12 @@ class NemsEventsIntegrationTest {
                 "\"eventType\":\"SUSPENSION\",\"nemsMessageId\":\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\",\"nhsNumber\":\"9912003888\"}");
             assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
+            assertThat(receivedMessage.getMessageAttributes()).containsKey("nemsMessageId");
         });
 
         validateAuditMessageReceived(suspensionMessageBody);
         purgeQueue(receiving);
-        }
+    }
 
     private void validateAuditMessageReceived(String messageBody) {
         String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE).getQueueUrl();

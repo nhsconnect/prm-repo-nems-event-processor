@@ -16,6 +16,6 @@ public class SuspensionsEventPublisher {
     }
 
     public void sendMessage(NemsEventMessage nemsEventMessage) {
-        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, nemsEventMessage.toJsonString());
+        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, nemsEventMessage.toJsonString(), "nemsMessageId", nemsEventMessage.getNemsMessageId());
     }
 }
