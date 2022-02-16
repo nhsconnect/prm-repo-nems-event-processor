@@ -168,6 +168,14 @@ resource "aws_sqs_queue" "nems_dlq_audit" {
   name                       = "${var.environment}-nems-event-processor-dlq-audit"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.nems_dlq_audit_queue_dlq.arn
+    maxReceiveCount     = 4
+  })
+#  redrive_allow_policy = jsonencode({
+#    redrivePermission = "byQueue",
+#    sourceQueueArns   = [aws_sqs_queue.nems_dlq_audit_queue_dlq.arn]
+#  })
 
   tags = {
     Name = "${var.environment}-nems-event-processor-dlq-audit"
@@ -175,6 +183,19 @@ resource "aws_sqs_queue" "nems_dlq_audit" {
     Environment = var.environment
   }
 }
+
+resource "aws_sqs_queue" "nems_dlq_audit_queue_dlq" {
+  name                       = "${var.environment}-nems-event-processor-incoming-dlq-audit-dlq"
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-nems-event-processor-incoming-dlq-audit-dlq"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 
 resource "aws_sns_topic_subscription" "dlq_sns_topic_to_nems_dlq_audit" {
   protocol             = "sqs"
@@ -206,6 +227,10 @@ resource "aws_sqs_queue" "nems_audit" {
   name                       = "${var.environment}-nems-event-processor-incoming-audit"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.nems_audit_queue_dlq.arn
+    maxReceiveCount     = 4
+  })
 
   tags = {
     Name = "${var.environment}-nems-event-processor-incoming-audit"
@@ -213,6 +238,19 @@ resource "aws_sqs_queue" "nems_audit" {
     Environment = var.environment
   }
 }
+
+resource "aws_sqs_queue" "nems_audit_queue_dlq" {
+  name                       = "${var.environment}-nems-event-processor-incoming-audit-dlq"
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id = aws_kms_key.nems_audit.id
+
+  tags = {
+    Name = "${var.environment}-nems-event-processor-incoming-audit-dlq"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 
 resource "aws_sns_topic_subscription" "nems_audit_sns_topic_to_dlq" {
   protocol             = "sqs"
