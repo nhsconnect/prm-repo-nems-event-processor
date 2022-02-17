@@ -69,9 +69,25 @@ resource "aws_sqs_queue" "unhandled_audit" {
   name                       = "${var.environment}-${var.component_name}-unhandled-audit"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.unhandled_audit_dlq.arn
+    maxReceiveCount     = 4
+  })
 
   tags = {
     Name = "${var.environment}-${var.component_name}-unhandled-audit"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "unhandled_audit_dlq" {
+  name                       = "${var.environment}-unhandled-audit-dlq"
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id = aws_kms_key.nems_audit.id
+
+  tags = {
+    Name = "${var.environment}-unhandled-audit-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
