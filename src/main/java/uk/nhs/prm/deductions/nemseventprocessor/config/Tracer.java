@@ -17,7 +17,7 @@ public class Tracer {
     public String startMessageTrace(String originalMessageId) {
         clearMDCContext();
         String traceIdUUID = UUID.randomUUID().toString();
-        String traceIdHex = traceIdUUID.replaceAll("-", "");
+        String traceIdHex = traceIdUUID;
         MDC.put(TRACE_ID, traceIdHex);
         MDC.put(MESH_MESSAGE_ID, originalMessageId);
         return traceIdHex;
