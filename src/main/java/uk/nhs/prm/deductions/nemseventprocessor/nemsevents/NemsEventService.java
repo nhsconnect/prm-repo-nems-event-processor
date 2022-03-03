@@ -27,9 +27,6 @@ public class NemsEventService {
             NemsEventMessage nemsEventMessage = parser.parse(message);
             if (nemsEventMessage.isSuspension()) {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
-                System.out.println("i'll just quickly dump out a patient"+nemsEventMessage.exposeSensitiveData().get("nhsNumber"));
-                System.err.println("i'll just quickly dump out a patient again: "+nemsEventMessage.exposeSensitiveData().get("nhsNumber"));
-                log.info("i'll just quickly dump out a patient again"+nemsEventMessage.exposeSensitiveData().get("nhsNumber") + "again");
                 suspensionsEventPublisher.sendMessage(nemsEventMessage);
                 return;
             }
