@@ -2,6 +2,9 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -434,41 +437,17 @@ class NemsEventParserTest {
         assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
     }
 
-    @Test
-    void shouldThrowAnErrorWhenLastUpdatedValueIsNotFormattedAsIso8601Date() {
-        var notAIso8601Date = "2022-03-08 15:45:14.668751";
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "2022-03-08 15:45:14.668751", "NOT-A-DATE"})
+    void shouldThrowAnErrorWhenLastUpdatedValueIsNotFormattedAsIso8601Date(String wrongDateOrFormat) {
         var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 "   <entry>\n" +
                 "        <resource>\n" +
                 "            <MessageHeader>\n" +
                 "                <id value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>" +
                 "                <meta>\n" +
-                "                    <lastUpdated value=\"" +notAIso8601Date + "\"/>\n" +
-                "                </meta>\n" +
-                "            </MessageHeader>\n" +
-                "        </resource>\n" +
-                "    </entry>" +
-                PATIENT_ENTRY_WITHOUT_CURRENT_GP +
-                EPISODE_OF_CARE +
-                PREVIOUS_GP_ORGANIZATION +
-                "</Bundle>";
-
-        var nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
-            nemsEventParser.parse(messageBody);
-        });
-
-        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract last updated field from Message Header Entry");
-    }
-
-    @Test
-    void shouldThrowAnErrorWhenLastUpdatedValueIsNotADate() {
-        var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
-                "   <entry>\n" +
-                "        <resource>\n" +
-                "            <MessageHeader>\n" +
-                "                <id value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>" +
-                "                <meta>\n" +
-                "                    <lastUpdated value=\"NOT-A-DATE\"/>\n" +
+                "                    <lastUpdated value=\"" + wrongDateOrFormat + "\"/>\n" +
                 "                </meta>\n" +
                 "            </MessageHeader>\n" +
                 "        </resource>\n" +
