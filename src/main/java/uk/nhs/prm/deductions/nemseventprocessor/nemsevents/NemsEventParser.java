@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -112,9 +113,15 @@ public class NemsEventParser {
         }
     }
 
+    private void validateLastUpdatedAsIso8601DateString(String lastUpdated) {
+        ZonedDateTime.parse(lastUpdated);
+    }
+
     private String extractWhenLastUpdated(XML messageXml) {
         try {
-            return query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
+            var lastUpdated = query(messageXml, "//fhir:MessageHeader/fhir:meta/fhir:lastUpdated/@value");
+            validateLastUpdatedAsIso8601DateString(lastUpdated);
+            return lastUpdated;
         } catch (Exception e) {
             throw new NemsEventParseException("Cannot extract last updated field from Message Header Entry");
         }
