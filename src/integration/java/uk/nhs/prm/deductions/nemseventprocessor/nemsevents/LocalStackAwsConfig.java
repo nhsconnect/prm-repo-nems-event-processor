@@ -5,6 +5,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class LocalStackAwsConfig {
 
     public final static String UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE = "unhandled_test_receiver";
     public final static String SUSPENSIONS_TEST_RECEIVING_QUEUE = "suspensions_test_receiver";
-    public final static String NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE = "nems_events_audit_test_receiver";
+    public final static String NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE = "nems_events_audit_test_receiver";
 
     @Autowired
     private AmazonSQSAsync amazonSQSAsync;
@@ -71,7 +72,7 @@ public class LocalStackAwsConfig {
 
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        amazonSQSAsync.createQueue(nemsEventQueueName);
+        createIncomingNemsQueue();
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_unhandled_events_topic").build());
         CreateTopicResponse suspensionsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_suspensions_topic").build());
         CreateTopicResponse nemsEventsAuditTopic =
@@ -80,7 +81,16 @@ public class LocalStackAwsConfig {
 
         createSnsTestReceiverSubscription(topic, UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE);
         createSnsTestReceiverSubscription(suspensionsTopic, SUSPENSIONS_TEST_RECEIVING_QUEUE);
-        createSnsTestReceiverSubscription(nemsEventsAuditTopic, NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE);
+        createSnsTestReceiverSubscription(nemsEventsAuditTopic, NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE);
+    }
+
+    private void createIncomingNemsQueue() {
+        CreateQueueRequest createQueueRequest = new CreateQueueRequest();
+        createQueueRequest.setQueueName(nemsEventQueueName);
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("VisibilityTimeout", "0");
+        createQueueRequest.withAttributes(attributes);
+        amazonSQSAsync.createQueue(createQueueRequest);
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queue) {

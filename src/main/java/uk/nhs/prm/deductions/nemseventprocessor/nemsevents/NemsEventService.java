@@ -13,7 +13,7 @@ import static uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessageStatus.
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class NemsEventService {
+public class NemsEventService implements NemsEventHandler {
 
     private final NemsEventParser parser;
     private final UnhandledEventPublisher unhandledEventPublisher;
@@ -21,6 +21,7 @@ public class NemsEventService {
     private final DeadLetterQueuePublisher deadLetterQueuePublisher;
     private final AuditService auditService;
 
+    @Override
     public void processNemsEvent(String message) {
         try {
             auditService.extractNemsMessageIdAndPublishAuditMessage(message);

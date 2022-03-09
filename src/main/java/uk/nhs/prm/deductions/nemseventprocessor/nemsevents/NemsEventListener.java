@@ -14,9 +14,8 @@ import javax.jms.TextMessage;
 @RequiredArgsConstructor
 public class NemsEventListener implements MessageListener {
 
-    private final NemsEventService nemsEventService;
+    private final NemsEventHandler nemsEventService;
     private final Tracer tracer;
-
 
     @Override
     public void onMessage(Message message) {

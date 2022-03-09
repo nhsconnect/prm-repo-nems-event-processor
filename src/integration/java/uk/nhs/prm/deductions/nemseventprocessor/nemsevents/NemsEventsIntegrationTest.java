@@ -179,7 +179,7 @@ class NemsEventsIntegrationTest {
     }
 
     private void validateAuditMessageReceived(String messageBody) {
-        String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDUT_TEST_RECEIVING_QUEUE).getQueueUrl();
+        String auditReceiving = amazonSQSAsync.getQueueUrl(NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE).getQueueUrl();
 
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             System.out.println("checking sqs queue: " + auditReceiving);

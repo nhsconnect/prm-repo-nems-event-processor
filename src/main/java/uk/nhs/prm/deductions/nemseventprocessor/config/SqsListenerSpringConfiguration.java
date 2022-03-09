@@ -3,6 +3,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.config;
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnection;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
+import com.amazon.sqs.javamessaging.SQSSession;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import lombok.RequiredArgsConstructor;
