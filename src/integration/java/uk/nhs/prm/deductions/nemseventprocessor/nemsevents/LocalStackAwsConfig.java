@@ -8,6 +8,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
+import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -72,7 +73,7 @@ public class LocalStackAwsConfig {
 
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        createIncomingNemsQueue();
+        recreateIncomingNemsQueue();
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_unhandled_events_topic").build());
         CreateTopicResponse suspensionsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_suspensions_topic").build());
         CreateTopicResponse nemsEventsAuditTopic =
@@ -84,13 +85,30 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(nemsEventsAuditTopic, NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE);
     }
 
-    private void createIncomingNemsQueue() {
+    private void recreateIncomingNemsQueue() {
+        ensureQueueDeleted(nemsEventQueueName);
+        createQueue(nemsEventQueueName);
+    }
+
+    private void createQueue(String queueName) {
         CreateQueueRequest createQueueRequest = new CreateQueueRequest();
-        createQueueRequest.setQueueName(nemsEventQueueName);
+        createQueueRequest.setQueueName(queueName);
         HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("VisibilityTimeout", "0");
         createQueueRequest.withAttributes(attributes);
-        amazonSQSAsync.createQueue(createQueueRequest);
+        amazonSQSAsync.createQueue(queueName);
+    }
+
+    private void ensureQueueDeleted(String queueName) {
+        try {
+            deleteQueue(queueName);
+        }
+        catch (QueueDoesNotExistException e) {
+            // no biggie
+        }
+    }
+
+    private void deleteQueue(String queueName) {
+        amazonSQSAsync.deleteQueue(amazonSQSAsync.getQueueUrl(queueName).getQueueUrl());
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queue) {
