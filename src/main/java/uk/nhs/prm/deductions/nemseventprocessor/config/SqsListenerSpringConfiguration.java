@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventHandler;
 import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventListener;
-import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventService;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -26,7 +26,7 @@ public class SqsListenerSpringConfiguration {
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventsQueueName;
 
-    private final NemsEventService nemsEventService;
+    private final NemsEventHandler nemsEventHandler;
     private final Tracer tracer;
 
     @Bean
@@ -42,11 +42,11 @@ public class SqsListenerSpringConfiguration {
 
     @Bean
     public Session createListeners(SQSConnection connection) throws JMSException, InterruptedException {
-        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        Session session = connection.createSession(false, SQSSession.UNORDERED_ACKNOWLEDGE);
         log.info("nems event queue name : {}", nemsEventsQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(nemsEventsQueueName));
 
-        consumer.setMessageListener(new NemsEventListener(nemsEventService, tracer));
+        consumer.setMessageListener(new NemsEventListener(nemsEventHandler, tracer));
 
         connection.start();
 

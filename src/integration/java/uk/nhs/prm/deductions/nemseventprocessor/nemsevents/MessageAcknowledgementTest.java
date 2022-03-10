@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
@@ -21,39 +22,38 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { LocalStackAwsConfig.class, StubbedNemsEventServiceConfig.class })
+@ContextConfiguration(classes = {
+        LocalStackAwsConfig.class
+})
 class MessageAcknowledgementTest {
 
     @Autowired
     private AmazonSQSAsync amazonSQSAsync;
 
+    @Autowired
+    private StubbedNemsEventHandler stubbedNemsEventHandler;
+
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventQueueName;
 
     @Test
-    void shouldNotAcknowledgeMessageWhenExceptionIsThrownInProcessingLeavingItAvailableToBeReprocessed() {
+    void shouldNotImplicitlyAcknowledgeAFailedMessageWhenTheNextMessageIsProcessedOk_SoThatItIsThereToBeReprocessedAfterVisibilityTimeout() {
         String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
 
-        StubbedNemsEventServiceConfig.throwOnProcessNextMessage();
+        amazonSQSAsync.sendMessage(queueUrl, "throw me");
+        stubbedNemsEventHandler.waitUntilProcessed("throw me", 10);
 
-        amazonSQSAsync.sendMessage(queueUrl, "bob");
+        amazonSQSAsync.sendMessage(queueUrl, "process me ok");
+        stubbedNemsEventHandler.waitUntilProcessed("process me ok", 10);
 
-        StubbedNemsEventServiceConfig.waitUntilProcessedMessage();
-
-        var messagesAfterProcessing = getIncomingNemsMessages();
-
-        assertThat(messagesAfterProcessing.size()).isEqualTo(1);
-        assertThat(messagesAfterProcessing.get(0).getBody()).isEqualTo("bob");
+        assertThat(getIncomingNemsMessagesCount("ApproximateNumberOfMessagesNotVisible")).isEqualTo(1);
     }
 
-    private List<Message> getIncomingNemsMessages() {
-        String incomingQueue = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(incomingQueue);
-        return amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
-    }
-
-    private void purgeQueue(String queueUrl) {
-        System.out.println("Purging queue url: " + queueUrl);
-        amazonSQSAsync.purgeQueue(new PurgeQueueRequest(queueUrl));
+    private int getIncomingNemsMessagesCount(String countAttributeName) {
+        var incomingQueue = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
+        var attributes = amazonSQSAsync.getQueueAttributes(new GetQueueAttributesRequest()
+                .withAttributeNames(countAttributeName)
+                .withQueueUrl(incomingQueue)).getAttributes();
+        return Integer.parseInt(attributes.get(countAttributeName));
     }
 }

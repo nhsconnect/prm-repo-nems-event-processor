@@ -24,7 +24,6 @@ import static uk.nhs.prm.deductions.nemseventprocessor.nemsevents.LocalStackAwsC
 
 @SpringBootTest()
 @ActiveProfiles("test")
-@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 class NemsEventsIntegrationTest {
 

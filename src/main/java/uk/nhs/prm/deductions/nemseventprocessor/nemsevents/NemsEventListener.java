@@ -1,11 +1,9 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.deductions.nemseventprocessor.config.Tracer;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
