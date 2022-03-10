@@ -1,15 +1,10 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalTime;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static java.time.LocalTime.now;
 
-@Service
-@Primary
 public class StubbedNemsEventHandler implements NemsEventHandler {
 
     private ConcurrentLinkedQueue processedMessages = new ConcurrentLinkedQueue();

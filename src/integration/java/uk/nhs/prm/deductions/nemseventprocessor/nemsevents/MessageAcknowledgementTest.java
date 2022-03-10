@@ -2,22 +2,23 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -30,11 +31,22 @@ class MessageAcknowledgementTest {
     @Autowired
     private AmazonSQSAsync amazonSQSAsync;
 
-    @Autowired
-    private StubbedNemsEventHandler stubbedNemsEventHandler;
+    @MockBean
+    private NemsEventHandler nemsEventHandler;
 
     @Value("${aws.nemsEventsQueueName}")
     private String nemsEventQueueName;
+
+    private StubbedNemsEventHandler stubbedNemsEventHandler;
+
+    @BeforeEach
+    public void setUpStubbedHandler() {
+        stubbedNemsEventHandler = new StubbedNemsEventHandler();
+        doAnswer(invocation -> {
+            stubbedNemsEventHandler.processNemsEvent(invocation.getArgument(0));
+            return null;
+        }).when(nemsEventHandler).processNemsEvent(anyString());
+    }
 
     @Test
     void shouldNotImplicitlyAcknowledgeAFailedMessageWhenTheNextMessageIsProcessedOk_SoThatItIsThereToBeReprocessedAfterVisibilityTimeout() {
