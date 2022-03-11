@@ -187,7 +187,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_age_of_message" {
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-incoming-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300"
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
@@ -203,7 +203,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_audit" {
 resource "aws_cloudwatch_metric_alarm" "nems_dlq_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-dlq-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300"
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
@@ -219,7 +219,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_dlq_audit" {
 resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
   alarm_name                = "${var.environment}-${var.component_name}-unhandled-audit"
   comparison_operator       = "GreaterThanThreshold"
-  threshold                 = "300"
+  threshold                 = "900"
   evaluation_periods        = "1"
   metric_name               = "ApproximateAgeOfOldestMessage"
   namespace                 = local.sqs_namespace
