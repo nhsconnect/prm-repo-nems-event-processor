@@ -1,4 +1,4 @@
-FROM openjdk:11.0.7-jdk-buster
+FROM openjdk:11.0.14.1-jre-slim-buster
 RUN mkdir /home/spring
 RUN groupadd --gid 102 spring
 RUN useradd --home-dir /home/spring --uid 1000 --gid 102 --shell /bin/bash spring
