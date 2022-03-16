@@ -48,11 +48,11 @@ resource "aws_security_group" "ecs-tasks-sg" {
   vpc_id      = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
-    description = "Allow All Outbound"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound HTTPS traffic in vpc"
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
+    cidr_blocks = [cidrsubnet(data.aws_vpc.private_vpc.cidr_block, 4, 1)]
   }
 
   tags = {
@@ -61,3 +61,8 @@ resource "aws_security_group" "ecs-tasks-sg" {
     Environment = var.environment
   }
 }
+
+data "aws_vpc" "private_vpc" {
+  id = data.aws_ssm_parameter.deductions_private_vpc_id.value
+}
+
