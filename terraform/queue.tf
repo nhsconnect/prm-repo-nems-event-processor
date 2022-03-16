@@ -70,7 +70,7 @@ resource "aws_sqs_queue" "unhandled_audit" {
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.unhandled_audit_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.nems_unhandled_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -81,8 +81,8 @@ resource "aws_sqs_queue" "unhandled_audit" {
   }
 }
 
-resource "aws_sqs_queue" "unhandled_audit_dlq" {
-  name                       = "${var.environment}-unhandled-audit-dlq"
+resource "aws_sqs_queue" "nems_unhandled_audit_splunk_dlq" {
+  name                       = "${var.environment}-nems-event-processor-unhandled-audit-splunk-dlq"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
 
@@ -185,13 +185,9 @@ resource "aws_sqs_queue" "nems_dlq_audit" {
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.nems_dlq_audit_queue_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.nems_dlq_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
-#  redrive_allow_policy = jsonencode({
-#    redrivePermission = "byQueue",
-#    sourceQueueArns   = [aws_sqs_queue.nems_dlq_audit_queue_dlq.arn]
-#  })
 
   tags = {
     Name = "${var.environment}-nems-event-processor-dlq-audit"
@@ -200,13 +196,13 @@ resource "aws_sqs_queue" "nems_dlq_audit" {
   }
 }
 
-resource "aws_sqs_queue" "nems_dlq_audit_queue_dlq" {
-  name                       = "${var.environment}-nems-event-processor-incoming-dlq-audit-dlq"
+resource "aws_sqs_queue" "nems_dlq_audit_splunk_dlq" {
+  name                       = "${var.environment}-nems-event-processor-dlq-audit-splunk-dlq"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-incoming-dlq-audit-dlq"
+    Name = "${var.environment}-nems-event-processor-dlq-audit-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -244,7 +240,7 @@ resource "aws_sqs_queue" "nems_audit" {
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.nems_audit_queue_dlq.arn
+    deadLetterTargetArn = aws_sqs_queue.nems_incoming_audit_splunk_dlq.arn
     maxReceiveCount     = 4
   })
 
@@ -255,13 +251,13 @@ resource "aws_sqs_queue" "nems_audit" {
   }
 }
 
-resource "aws_sqs_queue" "nems_audit_queue_dlq" {
-  name                       = "${var.environment}-nems-event-processor-incoming-audit-dlq"
+resource "aws_sqs_queue" "nems_incoming_audit_splunk_dlq" {
+  name                       = "${var.environment}-nems-event-processor-incoming-audit-splunk-dlq"
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-incoming-audit-dlq"
+    Name = "${var.environment}-nems-event-processor-incoming-audit-splunk-dlq"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
