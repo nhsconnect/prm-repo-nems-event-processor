@@ -231,3 +231,35 @@ resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 }
+
+resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours" {
+  alarm_name                = "${var.environment}-incoming-receiving-in-working-hours"
+  comparison_operator       = "LessThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  threshold                 = "0"
+  alarm_description         = "Alarm for when messages are not coming over working hour"
+  actions_enabled           = true
+
+  metric_query {
+    id          = "e1"
+    expression  = "IF(HOUR(m1) > 7 && HOUR(m1) < 20 && DAY(m1) < 6, m1, 0)"
+    label       = "IncomingMessageInWorkingHours"
+    return_data = "true"
+  }
+
+  metric_query {
+    id = "m1"
+
+    metric {
+      metric_name = "NumberOfMessagesReceived"
+      namespace   = local.sqs_namespace
+      period      = "14400" # 4 hours
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = aws_sqs_queue.incoming_nems_events.name
+      }
+    }
+  }
+}
