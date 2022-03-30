@@ -233,11 +233,11 @@ resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours" {
-  alarm_name                = "${var.environment}-incoming-receiving-in-working-hours"
+  alarm_name                = "${var.environment}-nems-incoming-receiving-in-working-hours"
   comparison_operator       = "LessThanOrEqualToThreshold"
   evaluation_periods        = "1"
   threshold                 = "0"
-  alarm_description         = "Alarm for when messages are not coming over working hour"
+  alarm_description         = "Alarm for when nems incoming messages are not coming over working hour"
   actions_enabled           = true
 
   metric_query {
