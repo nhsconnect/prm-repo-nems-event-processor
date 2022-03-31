@@ -258,7 +258,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours
 
   metric_query {
     id          = "isWorkingHour"
-    expression  = "IF(HOUR(msgCount) > 10 && HOUR(msgCount) < 20 && DAY(msgCount) < 6, 1, 0)"
+    expression  = "IF(HOUR(msgCount) >= 7 && HOUR(msgCount) <= 19 && DAY(msgCount) < 6, 1, 0)"
   }
   metric_query {
     id          = "e1"
