@@ -235,25 +235,18 @@ resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours" {
   alarm_name                = "${var.environment}-nems-incoming-receiving-in-working-hours"
   comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "1"
+  evaluation_periods        = "320" # 4 hours (given period is set to 1 min/60sec)
   threshold                 = "0"
   alarm_description         = "Alarm for when nems incoming messages are not coming over working hour"
   actions_enabled           = true
 
   metric_query {
-    id          = "e1"
-    expression  = "IF(HOUR(m1) > 7 && HOUR(m1) < 20 && DAY(m1) < 6, m1, 0)"
-    label       = "IncomingMessageInWorkingHours"
-    return_data = "true"
-  }
-
-  metric_query {
-    id = "m1"
+    id = "msgCount"
 
     metric {
       metric_name = "NumberOfMessagesReceived"
       namespace   = local.sqs_namespace
-      period      = "14400" # 4 hours
+      period      = "60"
       stat        = "Sum"
       unit        = "Count"
 
@@ -261,5 +254,16 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours
         QueueName = aws_sqs_queue.incoming_nems_events.name
       }
     }
+  }
+
+  metric_query {
+    id          = "isWorkingHour"
+    expression  = "IF(HOUR(msgCount) > 10 && HOUR(msgCount) < 20 && DAY(msgCount) < 6, 1, 0)"
+  }
+  metric_query {
+    id          = "e1"
+    expression  = "IF(msgCount == 0 && isWorkingHour == 1, 1, 0)"
+    label       = "IncomingMessageInWorkingHours"
+    return_data = "true"
   }
 }
