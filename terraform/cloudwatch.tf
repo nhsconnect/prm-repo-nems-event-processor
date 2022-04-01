@@ -235,7 +235,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours" {
   alarm_name                = "${var.environment}-nems-incoming-receiving-in-working-hours"
   comparison_operator       = "GreaterThanThreshold"
-  evaluation_periods        = "320" # 4 hours (given period is set to 1 min/60sec)
+  evaluation_periods        = "240" # 4 hours (given period is set to 1 min/60sec)
   threshold                 = "0"
   alarm_description         = "Alarm for when nems incoming messages are not coming over working hour. In the graph 1 means alarm, 0 means no alarm"
   actions_enabled           = true
