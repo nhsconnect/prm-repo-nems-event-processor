@@ -239,7 +239,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours
   threshold                 = "0"
   alarm_description         = "Alarm for when nems incoming messages are not coming over working hour. In the graph 1 means alarm, 0 means no alarm"
   actions_enabled           = true
-
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
   metric_query {
     id = "msgCount"
 
