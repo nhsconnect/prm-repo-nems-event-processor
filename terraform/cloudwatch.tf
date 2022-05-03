@@ -108,7 +108,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_ratio_of_received_to
   alarm_name                = "${var.environment}-nems-incoming-queue-ratio-of-received-to-acknowledgement"
   comparison_operator       = "LessThanOrEqualToThreshold"
   evaluation_periods        = "1"
-  threshold                 = "80"
+  threshold                 = "50"
   alarm_description         = "Received message ratio to acknowledgement exceeds %20"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
 
