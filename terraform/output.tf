@@ -39,3 +39,9 @@ resource "aws_ssm_parameter" "ecs-cluster-name" {
   type  = "String"
   value = aws_ecs_cluster.ecs-cluster.name
 }
+
+resource "aws_ssm_parameter" "re_registrations_sns_topic" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/re-registrations-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.re_registrations_topic.arn
+}
