@@ -275,3 +275,16 @@ resource "aws_sqs_queue_policy" "nems_audit_subscription" {
   queue_url = aws_sqs_queue.nems_audit.id
   policy    = data.aws_iam_policy_document.nems_audit_sns_topic_access_to_queue.json
 }
+
+#Re-registrations
+resource "aws_sns_topic" "re_registrations_topic" {
+  name = "${var.environment}-${var.component_name}-re-registrations-sns-topic"
+  kms_master_key_id = aws_kms_key.re_registrations.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-re-registrations-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}

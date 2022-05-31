@@ -78,6 +78,35 @@ resource "aws_kms_alias" "nems_audit" {
   target_key_id = aws_kms_key.nems_audit.id
 }
 
+#re-registrations
+resource "aws_kms_key" "re_registrations" {
+  description = "Custom KMS Key to enable server side encryption for Re-registrations Events"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
+
+  tags = {
+    Name        = "${var.environment}-sns-sqs-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "re_registrations_encryption" {
+  name          = "alias/re-registrations-kms-key"
+  target_key_id = aws_kms_key.re_registrations.id
+}
+
+resource "aws_ssm_parameter" "re_registrations_kms_key_id" {
+  name  = "/repo/${var.environment}/output/${var.repo_name}/re-registrations-kms-key-id"
+  type  = "String"
+  value = aws_kms_key.re_registrations.id
+
+  tags = {
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"
