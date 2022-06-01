@@ -109,6 +109,7 @@ resource "aws_ssm_parameter" "re_registrations_kms_key_id" {
 
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
+    sid    = "Enable key management through IAM while mitigating possible loss of key control"
     effect = "Allow"
 
     principals {
