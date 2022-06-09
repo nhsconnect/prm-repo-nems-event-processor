@@ -243,6 +243,6 @@ resource "aws_sns_topic_subscription" "re_registration_to_observability_queue" {
 }
 
 resource "aws_sqs_queue_policy" "re_registration_subscription" {
-  queue_url = aws_sqs_queue.re_registration_observability.arn
+  queue_url = aws_sqs_queue.re_registration_observability.id
   policy    = data.aws_iam_policy_document.re_registration_sns_topic_access_to_queue.json
 }
