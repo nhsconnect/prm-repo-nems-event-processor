@@ -178,3 +178,28 @@ data "aws_iam_policy_document" "nems_audit_sns_topic_access_to_queue" {
     }
   }
 }
+
+data "aws_iam_policy_document" "re_registration_sns_topic_access_to_queue" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.re_registration_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.re_registrations_topic.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}

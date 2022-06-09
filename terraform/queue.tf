@@ -222,3 +222,27 @@ resource "aws_sqs_queue_policy" "nems_audit_subscription" {
   queue_url = aws_sqs_queue.nems_audit.id
   policy    = data.aws_iam_policy_document.nems_audit_sns_topic_access_to_queue.json
 }
+
+resource "aws_sqs_queue" "re_registration_observability" {
+  name                       = "${var.environment}-${var.component_name}-re-registration-observability-queue"
+  message_retention_seconds  = local.thirty_minute_retention_period
+  kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-re-registration-observability-queue"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "re_registration_to_observability_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.re_registrations_topic.arn
+  endpoint             = aws_sqs_queue.re_registration_observability.arn
+}
+
+resource "aws_sqs_queue_policy" "re_registration_subscription" {
+  queue_url = aws_sqs_queue.re_registration_observability.arn
+  policy    = data.aws_iam_policy_document.re_registration_sns_topic_access_to_queue.json
+}
