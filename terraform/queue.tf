@@ -28,19 +28,6 @@ resource "aws_sqs_queue_policy" "incoming_nems_events_subscription" {
   policy    = data.aws_iam_policy_document.sqs_nems_event_policy_doc.json
 }
 
-#Unhandled Events Queue
-resource "aws_sns_topic" "unhandled_events" {
-  name = "${var.environment}-${var.component_name}-unhandled-events-sns-topic"
-  kms_master_key_id = aws_kms_key.unhandled_events.id
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-${var.component_name}-unhandled-events-sns-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
 resource "aws_sqs_queue" "unhandled_events" {
   name                       = "${var.environment}-${var.component_name}-unhandled-events-queue"
   message_retention_seconds  = local.thirty_minute_retention_period
@@ -105,19 +92,6 @@ resource "aws_sqs_queue_policy" "unhandled_audit_subscription" {
   policy    = data.aws_iam_policy_document.unhandled_events_sns_topic_access_to_queue.json
 }
 
-#Suspensions Queue
-resource "aws_sns_topic" "suspensions" {
-  name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
-  kms_master_key_id = aws_kms_key.suspensions.id
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-${var.component_name}-suspensions-sns-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
 resource "aws_sqs_queue" "suspensions_observability" {
   name                       = "${var.environment}-${var.component_name}-suspensions-observability-queue"
   message_retention_seconds  = local.thirty_minute_retention_period
@@ -140,19 +114,6 @@ resource "aws_sns_topic_subscription" "suspensions_events_to_observability_queue
 resource "aws_sqs_queue_policy" "suspensions_subscription" {
   queue_url = aws_sqs_queue.suspensions_observability.id
   policy    = data.aws_iam_policy_document.suspensions_sns_topic_access_to_queue.json
-}
-
-# Dead Letter Queue
-resource "aws_sns_topic" "dlq" {
-  name = "${var.environment}-${var.component_name}-dlq-sns-topic"
-  kms_master_key_id = aws_kms_key.dlq.id
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-${var.component_name}-dlq-sns-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
 }
 
 resource "aws_sqs_queue" "dlq" {
@@ -221,20 +182,6 @@ resource "aws_sqs_queue_policy" "nems_dlq_audit_subscription" {
   policy    = data.aws_iam_policy_document.dlq_sns_topic_access_to_queue.json
 }
 
-
-# Audit Queue
-resource "aws_sns_topic" "nems_audit" {
-  name = "${var.environment}-nems-event-processor-incoming-audit-topic"
-  kms_master_key_id = aws_kms_key.nems_audit.id
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-nems-event-processor-incoming-audit-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
 resource "aws_sqs_queue" "nems_audit" {
   name                       = "${var.environment}-nems-event-processor-incoming-audit"
   message_retention_seconds  = local.max_retention_period
@@ -274,17 +221,4 @@ resource "aws_sns_topic_subscription" "nems_audit_sns_topic_to_dlq" {
 resource "aws_sqs_queue_policy" "nems_audit_subscription" {
   queue_url = aws_sqs_queue.nems_audit.id
   policy    = data.aws_iam_policy_document.nems_audit_sns_topic_access_to_queue.json
-}
-
-#Re-registrations
-resource "aws_sns_topic" "re_registrations_topic" {
-  name = "${var.environment}-${var.component_name}-re-registrations-sns-topic"
-  kms_master_key_id = aws_kms_key.re_registrations.id
-  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
-
-  tags = {
-    Name = "${var.environment}-${var.component_name}-re-registrations-sns-topic"
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
 }
