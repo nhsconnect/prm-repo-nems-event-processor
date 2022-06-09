@@ -151,7 +151,7 @@ class NemsEventParserTest {
 
         var message = nemsEventParser.parse(messageBody);
 
-        assertThat(message.exposeSensitiveData().get("nhsNumber")).isEqualTo("9912003888");
+        assertThat(message.getNhsNumber()).isEqualTo("9912003888");
     }
 
     @Test
@@ -200,7 +200,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isSuspension());
-        assertThat(message.exposeSensitiveData().get("lastUpdated")).isEqualTo("2017-11-01T15:00:33+00:00");
+        assertThat(message.getLastUpdated()).isEqualTo("2017-11-01T15:00:33+00:00");
     }
 
     @Test
@@ -234,7 +234,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isSuspension());
-        assertThat(message.exposeSensitiveData().get("previousOdsCode")).isEqualTo("B85612");
+        assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
     }
 
     @Test
@@ -249,7 +249,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isSuspension());
-        assertThat(message.exposeSensitiveData().get("nemsMessageId")).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
+        assertThat(message.getNemsMessageId()).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
     }
 
     @Test
@@ -264,7 +264,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertFalse(message.isSuspension());
-        assertThat(message.exposeSensitiveData().get("nemsMessageId")).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
+        assertThat(message.getNemsMessageId()).isEqualTo("3cfdf880-13e9-4f6b-8299-53e96ef5ec02");
     }
 
     @Test

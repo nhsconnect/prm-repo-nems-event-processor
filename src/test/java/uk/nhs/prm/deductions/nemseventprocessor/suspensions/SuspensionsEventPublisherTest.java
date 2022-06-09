@@ -27,13 +27,8 @@ class SuspensionsEventPublisherTest {
 
     @Test
     void shouldPublishMessageToTheSuspensionsTopic() {
-        NemsEventMessage nemsEventMessage = NemsEventMessage.suspension("111", "2023-01-01",
-            "B12345", "123456");
+        var nemsEventMessage = NemsEventMessage.suspension("111", "2023-01-01", "B12345", "123456");
         suspensionsEventPublisher.sendMessage(nemsEventMessage);
-
-        String nemsEventMessageAsString = "{\"lastUpdated\":\"2023-01-01\",\"previousOdsCode\":" +
-            "\"B12345\",\"eventType\":\"SUSPENSION\",\"nemsMessageId\":\"123456\",\"nhsNumber\":\"111\"}";
-
-        verify(messagePublisher).sendMessage(suspensionsTopicArn, nemsEventMessageAsString, "nemsMessageId", "123456");
+        verify(messagePublisher).sendMessage(suspensionsTopicArn, nemsEventMessage.toJsonString(), "nemsMessageId", "123456");
     }
 }

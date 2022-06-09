@@ -2,14 +2,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
 import com.google.gson.Gson;
 
-import java.util.HashMap;
-import java.util.Map;
-
-interface HasSensitiveData {
-    public Map<String, String> exposeSensitiveData();
-}
-
-public class NemsEventMessage implements HasSensitiveData {
+public class NemsEventMessage {
     private final NemsEventType eventType;
     private final String nhsNumber;
     private final String lastUpdated;
@@ -36,22 +29,23 @@ public class NemsEventMessage implements HasSensitiveData {
         this.nemsMessageId = nemsMessageId;
     }
 
-    @Override
-    public Map<String, String> exposeSensitiveData() {
-        HashMap<String, String> sensitiveData = new HashMap<>();
-        sensitiveData.put("previousOdsCode", this.previousOdsCode);
-        sensitiveData.put("nhsNumber", this.nhsNumber);
-        sensitiveData.put("lastUpdated", this.lastUpdated);
-        sensitiveData.put("eventType", this.eventType.toString());
-        sensitiveData.put("nemsMessageId", this.nemsMessageId);
-        return sensitiveData;
-    }
-
     public String getNemsMessageId() {
         return this.nemsMessageId;
     }
 
+    public String getPreviousOdsCode() {
+        return this.previousOdsCode;
+    }
+
+    public String getNhsNumber() {
+        return this.nhsNumber;
+    }
+
+    public String getLastUpdated() {
+        return this.lastUpdated;
+    }
+
     public String toJsonString() {
-        return new Gson().toJson(this.exposeSensitiveData());
+        return new Gson().toJson(this);
     }
 }
