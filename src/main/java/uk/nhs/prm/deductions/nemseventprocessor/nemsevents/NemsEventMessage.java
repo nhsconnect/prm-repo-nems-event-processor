@@ -13,12 +13,20 @@ public class NemsEventMessage {
         return new NemsEventMessage(NemsEventType.SUSPENSION, nhsNumber, lastUpdated, odsCode, nemsMessageId);
     }
 
+    public static NemsEventMessage reRegistration(String nhsNumber, String lastUpdated, String odsCode, String nemsMessageId) {
+        return new NemsEventMessage(NemsEventType.REREGISTRATION, nhsNumber, lastUpdated, odsCode, nemsMessageId);
+    }
+
     public static NemsEventMessage nonSuspension(String nemsMessageId) {
         return new NemsEventMessage(NemsEventType.NON_SUSPENSION, null, null, null, nemsMessageId);
     }
 
     public boolean isSuspension() {
         return this.eventType == NemsEventType.SUSPENSION;
+    }
+
+    public boolean isReRegistration() {
+        return this.eventType == NemsEventType.REREGISTRATION;
     }
 
     private NemsEventMessage(NemsEventType eventType, String nhsNumber, String lastUpdated, String previousOdsCode, String nemsMessageId) {

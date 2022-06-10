@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEvent;
+import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
@@ -18,6 +20,7 @@ public class NemsEventService implements NemsEventHandler {
     private final NemsEventParser parser;
     private final UnhandledEventPublisher unhandledEventPublisher;
     private final SuspensionsEventPublisher suspensionsEventPublisher;
+    private final ReRegistrationEventPublisher reRegistrationEventPublisher;
     private final DeadLetterQueuePublisher deadLetterQueuePublisher;
     private final AuditService auditService;
 
@@ -29,6 +32,11 @@ public class NemsEventService implements NemsEventHandler {
             if (nemsEventMessage.isSuspension()) {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
                 suspensionsEventPublisher.sendMessage(nemsEventMessage);
+                return;
+            } else if (nemsEventMessage.isReRegistration()) {
+                log.info("REREGISTRATION event - sending to re-registration sns topic");
+                ReRegistrationEvent reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
+                reRegistrationEventPublisher.sendMessage(reRegistrationEvent);
                 return;
             }
             log.info("NON-SUSPENSION event - sending to unhandled sns topic");

@@ -98,7 +98,6 @@ class NemsEventsIntegrationTest {
         purgeQueue(receiving);
     }
 
-    @Disabled
     @Test
     void shouldSendReRegistrationNemsEventMessageToReRegistrationSnsTopic() {
 

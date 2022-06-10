@@ -82,7 +82,7 @@ class NemsEventParserTest {
             "                    <value value=\"9912003888\"/>\n" +
             "                </identifier>\n" +
             "                <generalPractitioner>\n" +
-            "                    <reference value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
+            "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
             "                    <display value=\"SHADWELL MEDICAL CENTRE\"/>\n" +
             "                </generalPractitioner>" +
             "            </Patient>\n" +
@@ -111,6 +111,20 @@ class NemsEventParserTest {
     }
 
     @Test
+    void shouldParseANemsMessageAsAReRegistrationWhenGPFieldIsPresentInThePatientSectionAndEpisodeOfCareIsMissing() {
+        var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                MESSAGE_HEADERS +
+                PATIENT_ENTRY_WITH_CURRENT_GP +
+                PREVIOUS_GP_ORGANIZATION +
+                "</Bundle>";
+
+        var message = nemsEventParser.parse(messageBody);
+
+        assertTrue(message.isReRegistration());
+        verify(nemsEventValidator).validate("9912003888", "01", "B85612");
+    }
+
+    @Test
     void shouldParseANemsMessageAsANonSuspensionWhenGPFieldIsPresentInThePatientSection() {
         var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
                 MESSAGE_HEADERS +
@@ -122,6 +136,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertFalse(message.isSuspension());
+        assertFalse(message.isReRegistration());
     }
 
     @Test
@@ -234,6 +249,30 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isSuspension());
+        assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
+    }
+
+    @Test
+    void shouldExtractGPPracticeURLFieldWhenParsingAReRegistrationMessage() {
+        var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                MESSAGE_HEADERS +
+                PATIENT_ENTRY_WITH_CURRENT_GP +
+                "    <entry>\n" +
+                "        <fullUrl value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "        <resource>\n" +
+                "            <Organization>\n" +
+                "                <identifier>\n" +
+                "                    <system value=\"https://fhir.nhs.uk/Id/ods-organization-code\"/>\n" +
+                "                    <value value=\"B85612\"/>\n" +
+                "                </identifier>\n" +
+                "            </Organization>\n" +
+                "        </resource>\n" +
+                "    </entry>" +
+                "</Bundle>";
+
+        var message = nemsEventParser.parse(messageBody);
+
+        assertTrue(message.isReRegistration());
         assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
     }
 
@@ -356,6 +395,37 @@ class NemsEventParserTest {
         });
 
         assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract previous GP URL Field from finished EpisodeOfCare");
+    }
+
+    @Test
+    void shouldThrowAnErrorWhenCannotExtractNewGpUrlFromNemsEvent() {
+        var messageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                MESSAGE_HEADERS +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                   <extension>\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"01\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
+                "                    <value value=\"9912003888\"/>\n" +
+                "                </identifier>\n" +
+                "                <generalPractitioner>\n" +
+                "                </generalPractitioner>" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "</Bundle>";
+
+        var nemsEventParseException = assertThrows(NemsEventParseException.class, () -> {
+            nemsEventParser.parse(messageBody);
+        });
+
+        assertThat(nemsEventParseException.getMessage()).contains("NemsEventParseException: Cannot extract new GP URL Field from generalPractitioner");
     }
 
     @Test

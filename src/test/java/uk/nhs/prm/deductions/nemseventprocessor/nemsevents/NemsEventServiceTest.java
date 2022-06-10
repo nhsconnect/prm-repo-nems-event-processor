@@ -8,6 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessageStatus;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
+import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEvent;
+import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.suspensions.SuspensionsEventPublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.unhandledevents.UnhandledEventPublisher;
 
@@ -22,6 +24,8 @@ class NemsEventServiceTest {
     private UnhandledEventPublisher unhandledEventPublisher;
     @Mock
     private SuspensionsEventPublisher suspensionsEventPublisher;
+    @Mock
+    private ReRegistrationEventPublisher reRegistrationEventPublisher;
     @Mock
     private DeadLetterQueuePublisher deadLetterQueuePublisher;
     @Mock
@@ -54,8 +58,28 @@ class NemsEventServiceTest {
     }
 
     @Test
+    void shouldPublishToReRegistrationTopicWhenMessageIsReRegistration() {
+        NemsEventMessage nemsEventMessage = NemsEventMessage.reRegistration("111", "2023-01-01", "B12345", "123456");
+        when(nemsEventParser.parse(anyString())).thenReturn(nemsEventMessage);
+        String message = "a suspension";
+        nemsEventService.processNemsEvent(message);
+        verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
+        var reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
+        verify(reRegistrationEventPublisher).sendMessage(reRegistrationEvent);
+    }
+
+    @Test
     void shouldNotPublishToUnhandledTopicWhenMessageIsSuspension() {
         when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.suspension("222", "2022-10-21", "A34564", "123456"));
+        String message = "not sent to unhandled";
+        nemsEventService.processNemsEvent(message);
+        verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
+        verifyNoInteractions(unhandledEventPublisher);
+    }
+
+    @Test
+    void shouldNotPublishToUnhandledTopicWhenMessageIsReRegistration() {
+        when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.reRegistration("222", "2022-10-21", "A34564", "123456"));
         String message = "not sent to unhandled";
         nemsEventService.processNemsEvent(message);
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);

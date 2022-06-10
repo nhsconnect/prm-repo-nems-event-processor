@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.reregistration;
 
 import com.google.gson.GsonBuilder;
 import lombok.Data;
+import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventMessage;
 
 @Data
 public class ReRegistrationEvent {
@@ -15,6 +16,13 @@ public class ReRegistrationEvent {
         this.newlyRegisteredOdsCode = newlyRegisteredOdsCode;
         this.nemsMessageId = nemsMessageId;
         this.lastUpdated = lastUpdated;
+    }
+
+    public ReRegistrationEvent(NemsEventMessage nemsEventMessage) {
+        this.nhsNumber = nemsEventMessage.getNhsNumber();
+        this.newlyRegisteredOdsCode = nemsEventMessage.getPreviousOdsCode();
+        this.nemsMessageId = nemsEventMessage.getNemsMessageId();
+        this.lastUpdated = nemsEventMessage.getLastUpdated();
     }
 
     public String toJsonString() {

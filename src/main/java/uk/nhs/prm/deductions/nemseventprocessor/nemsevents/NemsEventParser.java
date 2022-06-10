@@ -41,6 +41,11 @@ public class NemsEventParser {
             final XML organizationXml = getOrganizationXml(messageXml);
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
             return createSuspensionMessage(messageXml, organizationXml, nemsMessageId);
+        }else if (hasNoFinishedEpisodeOfCare(messageXml)) {
+            log.info("NEMS event has no episode of care");
+            final XML organizationXml = getNewGPOrganizationXml(messageXml);
+            validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
+            return createReRegistrationMessage(messageXml, organizationXml, nemsMessageId);
         }
 
         return NemsEventMessage.nonSuspension(nemsMessageId);
@@ -54,9 +59,21 @@ public class NemsEventParser {
         return findOrganizationByUrl(messageXml, previousGpReferenceUrl);
     }
 
+    private XML getNewGPOrganizationXml(XML messageXml) {
+        final String newGpReferenceUrl = extractNewGpUrl(messageXml);
+        return findOrganizationByUrl(messageXml, newGpReferenceUrl);
+    }
+
     @NotNull
     private NemsEventMessage createSuspensionMessage(final XML messageXml, XML organizationXml, String nemsMessageId) {
         return NemsEventMessage.suspension(extractNhsNumber(messageXml),
+                extractWhenLastUpdated(messageXml),
+                extractOdsCode(organizationXml),nemsMessageId);
+    }
+
+    @NotNull
+    private NemsEventMessage createReRegistrationMessage(final XML messageXml, XML organizationXml, String nemsMessageId) {
+        return NemsEventMessage.reRegistration(extractNhsNumber(messageXml),
                 extractWhenLastUpdated(messageXml),
                 extractOdsCode(organizationXml),nemsMessageId);
     }
@@ -78,6 +95,14 @@ public class NemsEventParser {
             return query(messageXml, "//fhir:EpisodeOfCare[fhir:status/@value='finished']/fhir:managingOrganization/fhir:reference/@value");
         } catch (Exception e){
             throw new NemsEventParseException("Cannot extract previous GP URL Field from finished EpisodeOfCare");
+        }
+    }
+
+    private String extractNewGpUrl(XML messageXml) {
+        try {
+            return query(messageXml, "//fhir:generalPractitioner/fhir:reference/@value");
+        } catch (Exception e){
+            throw new NemsEventParseException("Cannot extract new GP URL Field from generalPractitioner");
         }
     }
 
