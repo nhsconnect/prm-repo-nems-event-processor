@@ -15,6 +15,6 @@ public class ReRegistrationEventPublisher {
     }
 
     public void sendMessage(ReRegistrationEvent reRegistrationEvent) {
-        messagePublisher.sendMessage(reRegistrationSnsTopicArn, reRegistrationEvent.toJsonString());
+        messagePublisher.sendMessage(reRegistrationSnsTopicArn, reRegistrationEvent.toJsonString(), "nemsMessageId", reRegistrationEvent.getNemsMessageId());
     }
 }

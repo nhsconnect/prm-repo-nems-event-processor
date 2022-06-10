@@ -154,7 +154,7 @@ class NemsEventsIntegrationTest {
 
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             System.out.println("checking sqs queue: " + receiving);
-            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
+            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId").withMessageAttributeNames("nemsMessageId");
             List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
             System.out.println("messages: " + messages.size());
             assertThat(messages).hasSize(1);
@@ -172,6 +172,7 @@ class NemsEventsIntegrationTest {
             assertThat(receivedMessage.getBody()).contains(expectedBody);
             assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
+            assertThat(receivedMessage.getMessageAttributes()).containsKey("nemsMessageId");
         });
 
         purgeQueue(receiving);

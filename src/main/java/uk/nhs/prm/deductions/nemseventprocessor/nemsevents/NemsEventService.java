@@ -28,23 +28,23 @@ public class NemsEventService implements NemsEventHandler {
     public void processNemsEvent(String message) {
         try {
             auditService.extractNemsMessageIdAndPublishAuditMessage(message);
-            NemsEventMessage nemsEventMessage = parser.parse(message);
+            var nemsEventMessage = parser.parse(message);
             if (nemsEventMessage.isSuspension()) {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
                 suspensionsEventPublisher.sendMessage(nemsEventMessage);
                 return;
             } else if (nemsEventMessage.isReRegistration()) {
                 log.info("REREGISTRATION event - sending to re-registration sns topic");
-                ReRegistrationEvent reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
+                var reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
                 reRegistrationEventPublisher.sendMessage(reRegistrationEvent);
                 return;
             }
             log.info("NON-SUSPENSION event - sending to unhandled sns topic");
-            NonSuspendedMessage nonSuspendedMessage = new NonSuspendedMessage(nemsEventMessage.getNemsMessageId(), NO_ACTION_NON_SUSPENSION);
+            var nonSuspendedMessage = new NonSuspendedMessage(nemsEventMessage.getNemsMessageId(), NO_ACTION_NON_SUSPENSION);
             unhandledEventPublisher.sendMessage(nonSuspendedMessage, "Non-suspension");
         }
         catch (Exception e) {
-                log.info("PROCESSING FAILED - sending to dead letter sns topic.", e);
+            log.info("PROCESSING FAILED - sending to dead letter sns topic.", e);
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
     }

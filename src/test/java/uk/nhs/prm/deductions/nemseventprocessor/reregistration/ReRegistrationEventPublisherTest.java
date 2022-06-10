@@ -32,6 +32,6 @@ class ReRegistrationEventPublisherTest {
         var reRegistrationEvent = new ReRegistrationEvent("some-nhs-number", "some-ods-code", "some-nems-message-id", "last-updated");
         reRegistrationEventPublisher.sendMessage(reRegistrationEvent);
 
-        verify(messagePublisher).sendMessage(reRegistrationTopicArn, reRegistrationEvent.toJsonString());
+        verify(messagePublisher).sendMessage(reRegistrationTopicArn, reRegistrationEvent.toJsonString(), "nemsMessageId", "some-nems-message-id");
     }
 }
