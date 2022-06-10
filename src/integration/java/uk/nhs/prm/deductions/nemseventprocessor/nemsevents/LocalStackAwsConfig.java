@@ -33,6 +33,7 @@ public class LocalStackAwsConfig {
 
     public final static String UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE = "unhandled_test_receiver";
     public final static String SUSPENSIONS_TEST_RECEIVING_QUEUE = "suspensions_test_receiver";
+    public final static String RE_REGISTRATION_TEST_RECEIVING_QUEUE = "re_registration_test_receiver";
     public final static String NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE = "nems_events_audit_test_receiver";
 
     @Autowired
@@ -76,12 +77,14 @@ public class LocalStackAwsConfig {
         recreateIncomingNemsQueue();
         CreateTopicResponse topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_unhandled_events_topic").build());
         CreateTopicResponse suspensionsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_suspensions_topic").build());
+        CreateTopicResponse reRegistrationTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_re_registration_topic").build());
         CreateTopicResponse nemsEventsAuditTopic =
             snsClient.createTopic(CreateTopicRequest.builder().name("test_nems_events_audit_topic").build());
         snsClient.createTopic(CreateTopicRequest.builder().name("test_dead_letter_topic").build());
 
         createSnsTestReceiverSubscription(topic, UNHANDLED_EVENTS_TEST_RECEIVING_QUEUE);
         createSnsTestReceiverSubscription(suspensionsTopic, SUSPENSIONS_TEST_RECEIVING_QUEUE);
+        createSnsTestReceiverSubscription(reRegistrationTopic, RE_REGISTRATION_TEST_RECEIVING_QUEUE);
         createSnsTestReceiverSubscription(nemsEventsAuditTopic, NEMS_EVENTS_AUDIT_TEST_RECEIVING_QUEUE);
     }
 

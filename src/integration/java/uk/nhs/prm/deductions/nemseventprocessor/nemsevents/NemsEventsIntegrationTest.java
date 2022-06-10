@@ -5,14 +5,13 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessage;
 
 import java.util.List;
@@ -60,6 +59,17 @@ class NemsEventsIntegrationTest {
                 "            </Patient>\n" +
                 "        </resource>\n" +
                 "    </entry>\n" +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <EpisodeOfCare>\n" +
+                "                <status value=\"finished\"/>\n" +
+                "                <managingOrganization>\n" +
+                "                    <reference value=\"urn:uuid:e84bfc04-2d79-451e-84ef-a50116506088\"/>\n" +
+                "                    <display value=\"LIVERSEDGE MEDICAL CENTRE\"/>\n" +
+                "                </managingOrganization>\n" +
+                "            </EpisodeOfCare>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
                 "</Bundle>";
         amazonSQSAsync.sendMessage(queueUrl, nonSuspensionMessageBody);
 
@@ -83,6 +93,86 @@ class NemsEventsIntegrationTest {
             assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
             assertThat(receivedMessage.getBody()).isEqualTo(
                 "{\"nemsMessageId\":\"" + NEMS_MESSAGE_ID + "\",\"messageStatus\":\"NO_ACTION:NON_SUSPENSION\"}");
+        });
+
+        purgeQueue(receiving);
+    }
+
+    @Disabled
+    @Test
+    void shouldSendReRegistrationNemsEventMessageToReRegistrationSnsTopic() {
+
+        String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
+        String reRegistrationMessageBody = "<Bundle xmlns=\"http://hl7.org/fhir\">\n" +
+                "    <entry>\n" +
+                "        <fullUrl value=\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"/>\n" +
+                "        <resource>\n" +
+                "            <MessageHeader>\n" +
+                "                <id value=\"" + NEMS_MESSAGE_ID + "\"/>\n" +
+                "                <meta>\n" +
+                "                    <lastUpdated value=\"2017-11-01T15:00:33+00:00\"/>\n" +
+                "                </meta>\n" +
+                "            </MessageHeader>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "    <entry>\n" +
+                "        <resource>\n" +
+                "            <Patient>\n" +
+                "                <identifier>\n" +
+                "                   <extension>\n" +
+                "                        <valueCodeableConcept>\n" +
+                "                            <coding>\n" +
+                "                                <code value=\"01\"/>\n" +
+                "                            </coding>\n" +
+                "                        </valueCodeableConcept>\n" +
+                "                    </extension>" +
+                "                    <value value=\"9912003888\"/>\n" +
+                "                </identifier>\n" +
+                "                <generalPractitioner>\n" +
+                "                    <reference value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
+                "                    <display value=\"SHADWELL MEDICAL CENTRE\"/>\n" +
+                "                </generalPractitioner>\n" +
+                "            </Patient>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "    <entry>\n" +
+                "        <fullUrl value=\"urn:uuid:59a63170-b769-44f7-acb1-95cc3a0cb067\"/> \n" +
+                "        <resource>\n" +
+                "           <Organization>\n" +
+                "               <id value=\"59a63170-b769-44f7-acb1-95cc3a0cb067\"/>\n" +
+                "                <identifier>\n" +
+                "                    <system value=\"https://fhir.nhs.uk/Id/ods-organization-code\"/>\n" +
+                "                    <value value=\"B86056\"/>\n" +
+                "                </identifier>\n" +
+                "            </Organization>\n" +
+                "        </resource>\n" +
+                "    </entry>\n" +
+                "</Bundle>";
+
+        amazonSQSAsync.sendMessage(queueUrl, reRegistrationMessageBody);
+
+        String receiving = amazonSQSAsync.getQueueUrl(RE_REGISTRATION_TEST_RECEIVING_QUEUE).getQueueUrl();
+
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            System.out.println("checking sqs queue: " + receiving);
+            ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest().withQueueUrl(receiving).withMessageAttributeNames("traceId");
+            List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
+            System.out.println("messages: " + messages.size());
+            assertThat(messages).hasSize(1);
+            Message receivedMessage = messages.get(0);
+
+            System.out.println("message: " + receivedMessage.getBody());
+            System.out.println("message attributes: " + receivedMessage.getMessageAttributes());
+            System.out.println("message attributes empty: " + receivedMessage.getMessageAttributes().isEmpty());
+
+            var expectedBody = "{\"nhsNumber\":\"9912003888\"," +
+                    "\"newlyRegisteredOdsCode\":\"B86056\"," +
+                    "\"nemsMessageId\":\"3cfdf880-13e9-4f6b-8299-53e96ef5ec02\"," +
+                    "\"lastUpdated\":\"2017-11-01T15:00:33+00:00\"}";
+
+            assertThat(receivedMessage.getBody()).contains(expectedBody);
+            assertThat(receivedMessage.getMessageAttributes()).isNotEmpty();
+            assertThat(receivedMessage.getMessageAttributes()).containsKey("traceId");
         });
 
         purgeQueue(receiving);
