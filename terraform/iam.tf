@@ -87,7 +87,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.unhandled_events.arn,
       aws_sns_topic.suspensions.arn,
       aws_sns_topic.dlq.arn,
-      aws_sns_topic.nems_audit.arn
+      aws_sns_topic.nems_audit.arn,
+      aws_sns_topic.re_registrations_topic.arn,
     ]
   }
 }
