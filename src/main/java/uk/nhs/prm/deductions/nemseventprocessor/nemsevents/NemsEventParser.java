@@ -41,7 +41,7 @@ public class NemsEventParser {
             final XML organizationXml = getOrganizationXml(messageXml);
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));
             return createSuspensionMessage(messageXml, organizationXml, nemsMessageId);
-        }else if (hasNoFinishedEpisodeOfCare(messageXml)) {
+        } else if (hasNoFinishedEpisodeOfCare(messageXml)) {
             log.info("NEMS event has no episode of care");
             final XML organizationXml = getNewGPOrganizationXml(messageXml);
             validator.validate(extractNhsNumber(messageXml), extractNhsNumberVerificationValue(messageXml), extractOdsCode(organizationXml));

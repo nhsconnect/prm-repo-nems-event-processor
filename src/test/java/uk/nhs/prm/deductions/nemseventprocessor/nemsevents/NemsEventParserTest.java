@@ -249,7 +249,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isSuspension());
-        assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
+        assertThat(message.getOdsCode()).isEqualTo("B85612");
     }
 
     @Test
@@ -273,7 +273,7 @@ class NemsEventParserTest {
         var message = nemsEventParser.parse(messageBody);
 
         assertTrue(message.isReRegistration());
-        assertThat(message.getPreviousOdsCode()).isEqualTo("B85612");
+        assertThat(message.getOdsCode()).isEqualTo("B85612");
     }
 
     @Test

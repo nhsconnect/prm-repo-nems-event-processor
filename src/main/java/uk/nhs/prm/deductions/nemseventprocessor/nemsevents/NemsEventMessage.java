@@ -6,7 +6,7 @@ public class NemsEventMessage {
     private final NemsEventType eventType;
     private final String nhsNumber;
     private final String lastUpdated;
-    private final String previousOdsCode;
+    private final String odsCode;
     private final String nemsMessageId;
 
     public static NemsEventMessage suspension(String nhsNumber, String lastUpdated, String odsCode, String nemsMessageId) {
@@ -33,7 +33,7 @@ public class NemsEventMessage {
         this.eventType = eventType;
         this.nhsNumber = nhsNumber;
         this.lastUpdated = lastUpdated;
-        this.previousOdsCode = previousOdsCode;
+        this.odsCode = previousOdsCode;
         this.nemsMessageId = nemsMessageId;
     }
 
@@ -41,8 +41,8 @@ public class NemsEventMessage {
         return this.nemsMessageId;
     }
 
-    public String getPreviousOdsCode() {
-        return this.previousOdsCode;
+    public String getOdsCode() {
+        return this.odsCode;
     }
 
     public String getNhsNumber() {

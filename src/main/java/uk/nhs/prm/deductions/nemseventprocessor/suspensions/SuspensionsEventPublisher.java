@@ -3,7 +3,7 @@ package uk.nhs.prm.deductions.nemseventprocessor.suspensions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.nemseventprocessor.MessagePublisher;
-import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.NemsEventMessage;
+import uk.nhs.prm.deductions.nemseventprocessor.nemsevents.SuspendedMessage;
 
 @Component
 public class SuspensionsEventPublisher {
@@ -15,7 +15,7 @@ public class SuspensionsEventPublisher {
         this.suspensionsSnsTopicArn = suspensionsSnsTopicArn;
     }
 
-    public void sendMessage(NemsEventMessage nemsEventMessage) {
-        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, nemsEventMessage.toJsonString(), "nemsMessageId", nemsEventMessage.getNemsMessageId());
+    public void sendMessage(SuspendedMessage suspendedMessage) {
+        messagePublisher.sendMessage(this.suspensionsSnsTopicArn, suspendedMessage.toJsonString(), "nemsMessageId", suspendedMessage.getNemsMessageId());
     }
 }

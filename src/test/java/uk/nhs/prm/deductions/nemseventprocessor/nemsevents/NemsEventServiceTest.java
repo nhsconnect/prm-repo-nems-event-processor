@@ -49,12 +49,15 @@ class NemsEventServiceTest {
 
     @Test
     void shouldPublishToSuspensionsTopicWhenMessageIsSuspension() {
-        NemsEventMessage nemsEventMessage = NemsEventMessage.suspension("111", "2023-01-01", "B12345", "123456");
+        var nemsEventMessage = NemsEventMessage.suspension("111", "2023-01-01", "B12345", "123456");
         when(nemsEventParser.parse(anyString())).thenReturn(nemsEventMessage);
-        String message = "a suspension";
+        var message = "a suspension";
+        var suspendedMessage = new SuspendedMessage(nemsEventMessage);
+
         nemsEventService.processNemsEvent(message);
+
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
-        verify(suspensionsEventPublisher).sendMessage(nemsEventMessage);
+        verify(suspensionsEventPublisher).sendMessage(suspendedMessage);
     }
 
     @Test

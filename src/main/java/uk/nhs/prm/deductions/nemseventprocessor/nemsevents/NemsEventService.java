@@ -31,7 +31,7 @@ public class NemsEventService implements NemsEventHandler {
             var nemsEventMessage = parser.parse(message);
             if (nemsEventMessage.isSuspension()) {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
-                suspensionsEventPublisher.sendMessage(nemsEventMessage);
+                suspensionsEventPublisher.sendMessage(new SuspendedMessage(nemsEventMessage));
                 return;
             } else if (nemsEventMessage.isReRegistration()) {
                 log.info("REREGISTRATION event - sending to re-registration sns topic");

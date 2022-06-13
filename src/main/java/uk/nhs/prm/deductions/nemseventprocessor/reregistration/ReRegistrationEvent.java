@@ -20,7 +20,7 @@ public class ReRegistrationEvent {
 
     public ReRegistrationEvent(NemsEventMessage nemsEventMessage) {
         this.nhsNumber = nemsEventMessage.getNhsNumber();
-        this.newlyRegisteredOdsCode = nemsEventMessage.getPreviousOdsCode();
+        this.newlyRegisteredOdsCode = nemsEventMessage.getOdsCode();
         this.nemsMessageId = nemsEventMessage.getNemsMessageId();
         this.lastUpdated = nemsEventMessage.getLastUpdated();
     }
