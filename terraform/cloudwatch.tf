@@ -33,6 +33,7 @@ resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
     "Environment" = var.environment
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_log_metric_filter" "log_metric_filter" {
@@ -61,6 +62,7 @@ resource "aws_cloudwatch_metric_alarm" "error_log_alarm" {
   treat_missing_data        = "notBreaching"
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 data "aws_sns_topic" "alarm_notifications" {
@@ -83,6 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "suspensions_sns_topic_error_log_alarm" {
   treat_missing_data        = "notBreaching"
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "unhandled_events_sns_topic_error_log_alarm" {
@@ -101,6 +104,7 @@ resource "aws_cloudwatch_metric_alarm" "unhandled_events_sns_topic_error_log_ala
   treat_missing_data        = "notBreaching"
   actions_enabled           = "true"
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_dlq" {
@@ -117,6 +121,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_dlq" {
     QueueName = aws_sqs_queue.dlq.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_age_of_message" {
@@ -133,6 +138,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_queue_age_of_message" {
     QueueName = aws_sqs_queue.incoming_nems_events.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_audit" {
@@ -149,6 +155,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_audit" {
     QueueName = aws_sqs_queue.nems_audit.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_dlq_audit" {
@@ -165,6 +172,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_dlq_audit" {
     QueueName = aws_sqs_queue.nems_dlq_audit.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
@@ -181,6 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_unhandled_audit" {
     QueueName = aws_sqs_queue.unhandled_audit.name
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours" {
@@ -191,6 +200,7 @@ resource "aws_cloudwatch_metric_alarm" "nems_incoming_receiving_in_working_hours
   alarm_description         = "Alarm for when nems incoming messages are not coming over working hour. In the graph 1 means alarm, 0 means no alarm"
   actions_enabled           = true
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
   metric_query {
     id = "msgCount"
 
