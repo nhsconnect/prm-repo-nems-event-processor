@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditMessageStatus;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
+import uk.nhs.prm.deductions.nemseventprocessor.config.ToggleConfig;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEvent;
 import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEventPublisher;
@@ -32,6 +32,8 @@ class NemsEventServiceTest {
     private NemsEventParser nemsEventParser;
     @Mock
     private AuditService auditService;
+    @Mock
+    private ToggleConfig toggleConfig;
 
     @InjectMocks
     private NemsEventService nemsEventService;
@@ -61,7 +63,8 @@ class NemsEventServiceTest {
     }
 
     @Test
-    void shouldPublishToReRegistrationTopicWhenMessageIsReRegistration() {
+    void shouldPublishToReRegistrationTopicWhenMessageIsReRegistrationAndToggleIsTrue() {
+        when(toggleConfig.canProcessReregistrations()).thenReturn(true);
         NemsEventMessage nemsEventMessage = NemsEventMessage.reRegistration("111", "2023-01-01", "B12345", "123456");
         when(nemsEventParser.parse(anyString())).thenReturn(nemsEventMessage);
         String message = "a suspension";
@@ -69,6 +72,21 @@ class NemsEventServiceTest {
         verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
         var reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
         verify(reRegistrationEventPublisher).sendMessage(reRegistrationEvent);
+    }
+
+    @Test
+    void shouldPublishToUnhandledTopicForReRegistrationWhenMessageIsReRegistrationAndToggleIsFalse() {
+        String nemsMessageId = "1234567";
+        when(toggleConfig.canProcessReregistrations()).thenReturn(false);
+        NemsEventMessage nemsEventMessage = NemsEventMessage.reRegistration("111", "2023-01-01", "B12345", nemsMessageId);
+        when(nemsEventParser.parse(anyString())).thenReturn(nemsEventMessage);
+        String message = "a suspension";
+        nemsEventService.processNemsEvent(message);
+        verify(auditService).extractNemsMessageIdAndPublishAuditMessage(message);
+        verifyNoInteractions(reRegistrationEventPublisher);
+
+        NonSuspendedMessage expectedMessage = new NonSuspendedMessage(nemsMessageId, NO_ACTION_NON_SUSPENSION);
+        verify(unhandledEventPublisher).sendMessage(expectedMessage, "Non-suspension");
     }
 
     @Test
@@ -82,6 +100,7 @@ class NemsEventServiceTest {
 
     @Test
     void shouldNotPublishToUnhandledTopicWhenMessageIsReRegistration() {
+        when(toggleConfig.canProcessReregistrations()).thenReturn(true);
         when(nemsEventParser.parse(anyString())).thenReturn(NemsEventMessage.reRegistration("222", "2022-10-21", "A34564", "123456"));
         String message = "not sent to unhandled";
         nemsEventService.processNemsEvent(message);

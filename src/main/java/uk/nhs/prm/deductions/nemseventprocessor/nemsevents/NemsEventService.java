@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.nemseventprocessor.audit.AuditService;
+import uk.nhs.prm.deductions.nemseventprocessor.config.ToggleConfig;
 import uk.nhs.prm.deductions.nemseventprocessor.dlq.DeadLetterQueuePublisher;
 import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEvent;
 import uk.nhs.prm.deductions.nemseventprocessor.reregistration.ReRegistrationEventPublisher;
@@ -23,6 +24,7 @@ public class NemsEventService implements NemsEventHandler {
     private final ReRegistrationEventPublisher reRegistrationEventPublisher;
     private final DeadLetterQueuePublisher deadLetterQueuePublisher;
     private final AuditService auditService;
+    private final ToggleConfig toggleConfig;
 
     @Override
     public void processNemsEvent(String message) {
@@ -33,7 +35,7 @@ public class NemsEventService implements NemsEventHandler {
                 log.info("SUSPENSION event - sending to suspensions sns topic");
                 suspensionsEventPublisher.sendMessage(new SuspendedMessage(nemsEventMessage));
                 return;
-            } else if (nemsEventMessage.isReRegistration()) {
+            } else if (canSendReregistrationEvent(nemsEventMessage)) {
                 log.info("REREGISTRATION event - sending to re-registration sns topic");
                 var reRegistrationEvent = new ReRegistrationEvent(nemsEventMessage);
                 reRegistrationEventPublisher.sendMessage(reRegistrationEvent);
@@ -47,5 +49,11 @@ public class NemsEventService implements NemsEventHandler {
             log.info("PROCESSING FAILED - sending to dead letter sns topic.", e);
             deadLetterQueuePublisher.sendMessage(message, e.getMessage());
         }
+    }
+
+    private boolean canSendReregistrationEvent(NemsEventMessage nemsEventMessage) {
+        var canProcessReregistrations = toggleConfig.canProcessReregistrations();
+        log.info("Toggle canProcessReregistrations is: " + canProcessReregistrations);
+        return nemsEventMessage.isReRegistration() && canProcessReregistrations;
     }
 }
