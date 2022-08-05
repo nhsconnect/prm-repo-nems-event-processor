@@ -1,5 +1,15 @@
 locals {
-  incoming_queue_name = "${var.environment}-${var.component_name}-incoming-queue"
+  incoming_queue_name = "${var.environment}-${var.component_name}-incoming"
+  unhandled_events_queue_name = "${var.environment}-${var.component_name}-unhandled-events"
+  suspensions_observability_queue_name = "${var.environment}-${var.component_name}-suspensions-observability"
+  unhandled_audit_queue_name = "${var.environment}-${var.component_name}-unhandled-audit"
+  unhandled_audit_splunk_dlq_name = "${var.environment}-${var.component_name}-unhandled-audit-splunk-dlq"
+  incoming_audit_splunk_dlq_name = "${var.environment}-${var.component_name}-incoming-audit-splunk-dlq"
+  dlq_audit_splunk_dlq_name = "${var.environment}-${var.component_name}-dlq-audit-splunk-dlq"
+  incoming_audit_queue_name = "${var.environment}-${var.component_name}-incoming-audit"
+  dlq_name = "${var.environment}-${var.component_name}-dlq"
+  dlq_audit_queue_name = "${var.environment}-${var.component_name}-dlq-audit"
+  re-registration_observability_queue_name = "${var.environment}-${var.component_name}-re-registration-observability"
   max_retention_period = 1209600
   thirty_minute_retention_period = 1800
 }
@@ -29,12 +39,12 @@ resource "aws_sqs_queue_policy" "incoming_nems_events_subscription" {
 }
 
 resource "aws_sqs_queue" "unhandled_events" {
-  name                       = "${var.environment}-${var.component_name}-unhandled-events-queue"
+  name                       = local.unhandled_events_queue_name
   message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-unhandled-events-queue"
+    Name = local.unhandled_events_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -53,7 +63,7 @@ resource "aws_sqs_queue_policy" "unhandled_events_subscription" {
 }
 
 resource "aws_sqs_queue" "unhandled_audit" {
-  name                       = "${var.environment}-${var.component_name}-unhandled-audit"
+  name                       = local.unhandled_audit_queue_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
   redrive_policy = jsonencode({
@@ -62,19 +72,19 @@ resource "aws_sqs_queue" "unhandled_audit" {
   })
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-unhandled-audit"
+    Name = local.unhandled_audit_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "nems_unhandled_audit_splunk_dlq" {
-  name                       = "${var.environment}-nems-event-processor-unhandled-audit-splunk-dlq"
+  name                       = local.unhandled_audit_splunk_dlq_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
 
   tags = {
-    Name = "${var.environment}-unhandled-audit-dlq"
+    Name = local.unhandled_audit_splunk_dlq_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -93,12 +103,12 @@ resource "aws_sqs_queue_policy" "unhandled_audit_subscription" {
 }
 
 resource "aws_sqs_queue" "suspensions_observability" {
-  name                       = "${var.environment}-${var.component_name}-suspensions-observability-queue"
+  name                       = local.suspensions_observability_queue_name
   message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-suspensions-observability-queue"
+    Name = local.suspensions_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -117,12 +127,12 @@ resource "aws_sqs_queue_policy" "suspensions_subscription" {
 }
 
 resource "aws_sqs_queue" "dlq" {
-  name                       = "${var.environment}-${var.component_name}-dlq"
+  name                       = local.dlq_name
   message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-dlq-queue"
+    Name = local.dlq_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -142,7 +152,7 @@ resource "aws_sqs_queue_policy" "dlq_subscription" {
 
 #Audit DLQ
 resource "aws_sqs_queue" "nems_dlq_audit" {
-  name                       = "${var.environment}-nems-event-processor-dlq-audit"
+  name                       = local.dlq_audit_queue_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
   redrive_policy = jsonencode({
@@ -151,19 +161,19 @@ resource "aws_sqs_queue" "nems_dlq_audit" {
   })
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-dlq-audit"
+    Name = local.dlq_audit_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "nems_dlq_audit_splunk_dlq" {
-  name                       = "${var.environment}-nems-event-processor-dlq-audit-splunk-dlq"
+  name                       = local.dlq_audit_splunk_dlq_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_ssm_parameter.dlq_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-dlq-audit-splunk-dlq"
+    Name = local.dlq_audit_splunk_dlq_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -183,7 +193,7 @@ resource "aws_sqs_queue_policy" "nems_dlq_audit_subscription" {
 }
 
 resource "aws_sqs_queue" "nems_audit" {
-  name                       = "${var.environment}-nems-event-processor-incoming-audit"
+  name                       = local.incoming_audit_queue_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
   redrive_policy = jsonencode({
@@ -192,19 +202,19 @@ resource "aws_sqs_queue" "nems_audit" {
   })
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-incoming-audit"
+    Name = local.incoming_audit_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_sqs_queue" "nems_incoming_audit_splunk_dlq" {
-  name                       = "${var.environment}-nems-event-processor-incoming-audit-splunk-dlq"
+  name                       = local.incoming_audit_splunk_dlq_name
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id = aws_kms_key.nems_audit.id
 
   tags = {
-    Name = "${var.environment}-nems-event-processor-incoming-audit-splunk-dlq"
+    Name = local.incoming_audit_splunk_dlq_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
@@ -224,12 +234,12 @@ resource "aws_sqs_queue_policy" "nems_audit_subscription" {
 }
 
 resource "aws_sqs_queue" "re_registration_observability" {
-  name                       = "${var.environment}-${var.component_name}-re-registration-observability-queue"
+  name                       = local.re-registration_observability_queue_name
   message_retention_seconds  = local.thirty_minute_retention_period
   kms_master_key_id = data.aws_ssm_parameter.sns_sqs_kms_key_id.value
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-re-registration-observability-queue"
+    Name = local.re-registration_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
