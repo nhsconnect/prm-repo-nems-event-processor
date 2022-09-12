@@ -12,8 +12,7 @@ locals {
     { name = "DEAD_LETTER_QUEUE_SNS_TOPIC_ARN", value = aws_sns_topic.dlq.arn },
     { name = "NEMS_EVENTS_AUDIT_SNS_TOPIC_ARN", value = aws_sns_topic.nems_audit.arn },
     { name = "RE_REGISTRATION_SNS_TOPIC_ARN", value = aws_sns_topic.re_registrations_topic.arn },
-    { name = "NEMS_EVENTS_QUEUE_NAME", value = aws_sqs_queue.incoming_nems_events.name },
-    { name = "TOGGLE_CAN_PROCESS_RE_REGISTRATIONS", value = tostring(var.toggle_can_process_re_registrations) }
+    { name = "NEMS_EVENTS_QUEUE_NAME", value = aws_sqs_queue.incoming_nems_events.name }
   ]
 }
 

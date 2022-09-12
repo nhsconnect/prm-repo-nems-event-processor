@@ -35,8 +35,3 @@ variable "log_level" {
   type = string
   default = "debug"
 }
-
-variable "toggle_can_process_re_registrations" {
-  description = "Toggle to allow processing of re-registrations"
-  default = false
-}
