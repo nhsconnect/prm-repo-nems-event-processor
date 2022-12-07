@@ -27,4 +27,42 @@
       <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
       <cpe>cpe:/a:vmware:spring_framework</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      false positive for commons_net
+      file name: commons-codec-1.15.jar
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/commons\-codec/commons\-codec@.*$</packageUrl>
+      <cve>CVE-2021-37533</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      false positive for commons_net
+      file name: commons-text-1.10.0.jar
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
+      <cve>CVE-2021-37533</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      false positive as spring boot uses safe constructor in snakeyaml, see:
+
+      https://github.com/spring-projects/spring-boot/issues/33457
+
+      file name: snakeyaml-1.33.jar
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+      <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      6.5.0 version is only used by spotbugs who do not exercise vulnerability:
+
+      https://github.com/spotbugs/spotbugs/discussions/2251
+
+      file name: bcel-6.5.0.jar
+   ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.bcel/bcel@.*$</packageUrl>
+      <vulnerabilityName>CVE-2022-42920</vulnerabilityName>
+   </suppress>
 </suppressions>

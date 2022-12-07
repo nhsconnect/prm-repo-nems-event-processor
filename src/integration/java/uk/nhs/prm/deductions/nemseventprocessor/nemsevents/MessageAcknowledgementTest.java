@@ -1,7 +1,5 @@
 package uk.nhs.prm.deductions.nemseventprocessor.nemsevents;
 
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,13 +10,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
+import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 class MessageAcknowledgementTest {
 
     @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
+    private SqsClient sqsClient;
 
     @MockBean
     private NemsEventHandler nemsEventHandler;
@@ -50,22 +50,31 @@ class MessageAcknowledgementTest {
 
     @Test
     void shouldNotImplicitlyAcknowledgeAFailedMessageWhenTheNextMessageIsProcessedOk_SoThatItIsThereToBeReprocessedAfterVisibilityTimeout() {
-        String queueUrl = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
 
-        amazonSQSAsync.sendMessage(queueUrl, "throw me");
+        sendMessage(nemsEventQueueName, "throw me");
         stubbedNemsEventHandler.waitUntilProcessed("throw me", 10);
 
-        amazonSQSAsync.sendMessage(queueUrl, "process me ok");
+        sendMessage(nemsEventQueueName, "process me ok");
         stubbedNemsEventHandler.waitUntilProcessed("process me ok", 10);
 
         assertThat(getIncomingNemsMessagesCount("ApproximateNumberOfMessagesNotVisible")).isEqualTo(1);
     }
 
     private int getIncomingNemsMessagesCount(String countAttributeName) {
-        var incomingQueue = amazonSQSAsync.getQueueUrl(nemsEventQueueName).getQueueUrl();
-        var attributes = amazonSQSAsync.getQueueAttributes(new GetQueueAttributesRequest()
-                .withAttributeNames(countAttributeName)
-                .withQueueUrl(incomingQueue)).getAttributes();
-        return Integer.parseInt(attributes.get(countAttributeName));
+        var countAttribute = QueueAttributeName.fromValue(countAttributeName);
+        var attributesRequest = GetQueueAttributesRequest.builder()
+                .attributeNames(countAttribute)
+                .queueUrl(getQueueUrl(nemsEventQueueName))
+                .build();
+        var attributes = sqsClient.getQueueAttributes(attributesRequest).attributes();
+        return Integer.parseInt(attributes.get(countAttribute));
+    }
+
+    private void sendMessage(String queueName, String message) {
+        sqsClient.sendMessage(SendMessageRequest.builder().queueUrl(getQueueUrl(queueName)).messageBody(message).build());
+    }
+
+    private String getQueueUrl(String queueName) {
+        return sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
     }
 }
