@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '5.0.13'
-    id 'org.owasp.dependencycheck' version '6.2.2'
+    id 'org.owasp.dependencycheck' version '7.1.0.1'
 }
 
 group = 'uk.nhs.prm.deductions'
@@ -58,7 +58,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
-
     implementation 'org.apache.bcel:bcel:6.6.1'
 
     compileOnly 'org.projectlombok:lombok:1.18.20'
