@@ -19,5 +19,5 @@ services:
       interval: 5s
       timeout: 5s
     volumes:
-      - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+      - "/var/lib/localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
