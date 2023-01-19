@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '5.0.13'
-    id 'org.owasp.dependencycheck' version '7.1.0.1'
+    id 'org.owasp.dependencycheck' version '7.4.4'
 }
 
 group = 'uk.nhs.prm.deductions'
@@ -48,19 +48,19 @@ dependencies {
     implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
 
-    implementation platform('software.amazon.awssdk:bom:2.17.288')
+    implementation platform('software.amazon.awssdk:bom:2.18.41')
     implementation 'software.amazon.awssdk:cloudwatch'
     implementation 'software.amazon.awssdk:sns'
     implementation 'software.amazon.awssdk:sqs'
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:2.0.1'
 
     implementation 'com.jcabi:jcabi-xml:0.23.1'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
     implementation 'org.apache.bcel:bcel:6.6.1'
 
-    compileOnly 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-test'
@@ -69,7 +69,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-aop'
 
     testImplementation "org.mockito:mockito-core:3.+"
-    testImplementation 'org.awaitility:awaitility:3.0.0'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 }
 
 sourceSets {
