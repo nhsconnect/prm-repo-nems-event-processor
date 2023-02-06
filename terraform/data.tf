@@ -203,3 +203,23 @@ data "aws_iam_policy_document" "re_registration_sns_topic_access_to_queue" {
     }
   }
 }
+
+data "aws_iam_policy_document" "sns_cross_account_permissions_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sns:Subscribe"
+    ]
+
+    principals {
+      identifiers = (var.environment == "prod") ? ["487224344892"] : ["533825906475", "694282683086"]
+      type        = "AWS"
+    }
+
+    resources = [
+      aws_sns_topic.re_registrations_topic.arn
+    ]
+  }
+  count = (var.environment == "pre-prod" || var.environment == "prod") ? 1 : 0
+}
