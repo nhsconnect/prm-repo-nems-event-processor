@@ -35,3 +35,8 @@ variable "log_level" {
   type = string
   default = "debug"
 }
+
+variable "re_registration_sns_topic_cross_account_subscriber_account_ids" {
+  type = list(string)
+  default = []
+}
