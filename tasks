@@ -134,6 +134,21 @@ function build_docker_image() {
   echo Build completed on `date`
 }
 
+function die_localstack_die {
+  echo docker processes running: $(docker ps)
+
+  DOCKER_CONTAINERS_ON_PORT=$(docker ps --filter publish=4566 -q)
+
+  echo docker processes running on expected localstack port: $DOCKER_CONTAINERS_ON_PORT
+
+  if [ -z "$DOCKER_CONTAINERS_ON_PORT" ]; then
+    echo no localstack nonsense going on, cool
+  else
+    echo trying to kill localstack...
+    docker stop $DOCKER_CONTAINERS_ON_PORT
+  fi
+}
+
 ###########
 ## TASKS ##
 ###########
@@ -142,6 +157,9 @@ command="$1"
 case "${command}" in
   fetch_utils)
       fetch_redaction_utils
+      ;;
+  die_localstack_die)
+      die_localstack_die
       ;;
   build_docker)
       configure_local_envs
@@ -172,6 +190,7 @@ case "${command}" in
       ;;
   test_integration)
       configure_local_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
   test_integration_shell)
@@ -183,6 +202,7 @@ case "${command}" in
       ;;
   test_coverage)
       configure_local_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
@@ -190,6 +210,7 @@ case "${command}" in
       ;;
   code_quality)
       configure_local_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
@@ -197,6 +218,7 @@ case "${command}" in
       ;;
   test_all)
       configure_local_envs
+      die_localstack_die
       dojo -c Dojofile-itest "./tasks _test_all"
       ;;
   run_local)
