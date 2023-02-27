@@ -73,10 +73,10 @@ common:
               arguments:
                 - -c
                 - ./tasks build_docker
+  approval: &manual_approval
+    type: manual
+    allow_only_on_success: true
   promote: &promote
-    approval:
-      type: manual
-      allow_only_on_success: true
     clean_workspace: true
     resources:
       - docker
@@ -131,6 +131,7 @@ pipelines:
             NHS_ENVIRONMENT: dev
       - promote.test:
           <<: *promote
+          approval: *manual_approval
           environment_variables:
             NHS_ENVIRONMENT: test
       - deploy.test:
@@ -139,6 +140,7 @@ pipelines:
             NHS_ENVIRONMENT: test
       - promote.pre-prod:
           <<: *promote
+          approval: *manual_approval
           environment_variables:
             NHS_ENVIRONMENT: pre-prod
       - deploy.pre-prod:
@@ -147,6 +149,7 @@ pipelines:
             NHS_ENVIRONMENT: pre-prod
       - promote.prod:
           <<: *promote
+          approval: *manual_approval
           environment_variables:
             NHS_ENVIRONMENT: prod
       - deploy.prod:
