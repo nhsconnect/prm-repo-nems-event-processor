@@ -44,14 +44,30 @@ common:
               arguments:
                 - -c
                 - ./tasks promote_docker_image
-    - plan:
-        clean_workspace: true
-        jobs:
-          plan: *plan_job
     - deploy:
         clean_workspace: true
-        jobs:
-          deploy: *deploy_job
+        resources:
+          - docker
+        artifacts:
+          - build:
+              source: terraform/nhs_deployment.tfplan
+              destination: terraform/
+        tasks:
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks tf_plan create
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks tf_apply
+          - exec:
+              command: /bin/bash
+              arguments:
+                - -c
+                - ./tasks wait_ecs
   prod_stages: &prod_stages
     - promote_docker_image:
         resources:
@@ -133,7 +149,7 @@ pipelines:
         stage: test
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
-    stages: *common_stages
+    stages: *prod_stages
 
   'prm-deductions-nems-event-processor.perf':
     group: continuity-service
