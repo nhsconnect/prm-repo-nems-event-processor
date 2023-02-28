@@ -92,7 +92,7 @@ common:
           deploy: *deploy_job
 pipelines:
   'prm-deductions-nems-event-processor.dev':
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -108,7 +108,7 @@ pipelines:
     stages: *common_stages
 
   'prm-deductions-nems-event-processor.test':
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -130,7 +130,7 @@ pipelines:
     stages: *common_stages
 
   'prm-deductions-nems-event-processor.pre-prod':
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
@@ -151,30 +151,8 @@ pipelines:
       NHS_ENVIRONMENT: pre-prod
     stages: *prod_stages
 
-  'prm-deductions-nems-event-processor.perf':
-    group: continuity-service
-    label_template: '${git[:8]}'
-    materials:
-      git:
-        type: configrepo
-      app:
-        pipeline: prm-deductions-nems-event-processor
-        stage: docker
-      base_infra:
-        pipeline: prm-deductions-infra
-        stage: deploy_perf
-      test_env:
-        pipeline: prm-deductions-nems-event-processor.test
-        stage: deploy
-      e2e:
-        pipeline: continuity-e2e-tests.test
-        stage: test
-    environment_variables:
-      NHS_ENVIRONMENT: perf
-    stages: *common_stages
-
   'prm-deductions-nems-event-processor.prod':
-    group: continuity-service
+    group: repo-history
     label_template: '${git[:8]}'
     materials:
       git:
