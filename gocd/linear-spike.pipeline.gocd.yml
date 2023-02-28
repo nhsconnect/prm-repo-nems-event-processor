@@ -9,6 +9,8 @@ common:
         artifacts:
           - build:
               source: build
+        tabs:
+          TestReport: build/reports/tests/test/index.html
         tasks:
           - exec:
               command: /bin/bash
@@ -21,6 +23,8 @@ common:
         artifacts:
           - build:
               source: build
+        tabs:
+          TestReport: tests/integration/index.html
         tasks:
           - exec:
               command: /bin/bash
@@ -32,7 +36,8 @@ common:
           - build:
               source: build/reports/jacoco
         tabs:
-          coverage: jacoco/test/html/index.html
+          TestReport: tests/test/index.html
+          Coverage: jacoco/test/html/index.html
         resources:
           - docker
         tasks:
