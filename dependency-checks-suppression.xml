@@ -45,17 +45,6 @@
    </suppress>
    <suppress>
       <notes><![CDATA[
-      false positive as spring boot uses safe constructor in snakeyaml, see:
-
-      https://github.com/spring-projects/spring-boot/issues/33457
-
-      file name: snakeyaml-1.33.jar
-   ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-      <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
    false positive CVEs not related to package
    ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
