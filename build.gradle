@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.+'
+    id 'org.springframework.boot' version '2.7.+'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
@@ -30,9 +30,7 @@ jar {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
 
-    implementation 'org.yaml:snakeyaml:2.0'
-
-    implementation 'org.springframework:spring-expression:5.3.27'
+    implementation 'org.yaml:snakeyaml:2.+'
 
     implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
     implementation 'org.jetbrains:annotations:20.1.0'
