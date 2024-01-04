@@ -1,9 +1,9 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.11'
+    id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'jacoco'
-    id 'com.github.spotbugs' version '5.0.13'
+    id 'com.github.spotbugs' version '6.0.4'
     id 'org.owasp.dependencycheck' version '7.4.4'
 }
 
@@ -35,16 +35,16 @@ dependencies {
     implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
     implementation 'org.jetbrains:annotations:20.1.0'
 
-    implementation('io.netty:netty-buffer') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-common') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-handler') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-resolver') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
+    implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-common') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-handler') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-resolver') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.104.Final' } }
 
     implementation platform('software.amazon.awssdk:bom:2.18.41')
     implementation 'software.amazon.awssdk:cloudwatch'
@@ -55,8 +55,7 @@ dependencies {
     implementation 'com.jcabi:jcabi-xml:0.23.1'
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
-    implementation 'org.apache.bcel:bcel:6.6.1'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok'
@@ -116,7 +115,7 @@ jacocoTestCoverageVerification {
 }
 
 spotbugs {
-    toolVersion = '4.7.3'
+    toolVersion = '4.8.3'
 }
 
 spotbugsMain {
