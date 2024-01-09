@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.17_8-jre-alpine
+FROM amazoncorretto:21-alpine
 
 RUN apk add --no-cache bash
 
