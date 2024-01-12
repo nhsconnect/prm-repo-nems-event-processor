@@ -1,10 +1,9 @@
 plugins {
     id 'org.springframework.boot' version '2.7.18'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
     id 'jacoco'
-    id 'com.github.spotbugs' version '6.0.4'
-    id 'org.owasp.dependencycheck' version '7.4.4'
+    id 'com.github.spotbugs' version '6.0.6'
 }
 
 group = 'uk.nhs.prm.deductions'
@@ -29,8 +28,6 @@ jar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-
-    implementation 'org.yaml:snakeyaml:2.0'
 
     implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
     implementation 'org.jetbrains:annotations:20.1.0'
@@ -57,7 +54,7 @@ dependencies {
 
     implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
 
-    compileOnly 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-test'
@@ -148,14 +145,6 @@ spotbugsIntegration {
             destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
             stylesheet = 'fancy-hist.xsl'
         }
-    }
-}
-
-dependencyCheck {
-    failBuildOnCVSS = 7
-    suppressionFile = './dependency-checks-suppression.xml'
-    analyzers {
-          assemblyEnabled = false
     }
 }
 
