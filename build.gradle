@@ -1,14 +1,23 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.18'
+    id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '6.0.6'
+    id 'org.sonarqube' version '4.4.1.3373'
+}
+
+sonar {
+  properties {
+    property "sonar.projectKey", "prm-orphaned-record-continuity_prm-repo-nems-event-processor"
+    property "sonar.organization", "prm-orphaned-record-continuity"
+    property "sonar.host.url", "https://sonarcloud.io"
+  }
 }
 
 group = 'uk.nhs.prm.deductions'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '21'
 
 configurations {
     compileOnly {
