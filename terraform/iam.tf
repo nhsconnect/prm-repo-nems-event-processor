@@ -1,5 +1,12 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
+  sns_topic_arns = [
+    aws_sns_topic.unhandled_events.arn,
+    aws_sns_topic.suspensions.arn,
+    aws_sns_topic.dlq.arn,
+    aws_sns_topic.nems_audit.arn,
+    aws_sns_topic.re_registrations_topic.arn
+  ]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -79,17 +86,20 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions = [
-      "sns:Publish",
-      "sns:GetTopicAttributes"
-    ]
-    resources = [
-      aws_sns_topic.unhandled_events.arn,
-      aws_sns_topic.suspensions.arn,
-      aws_sns_topic.dlq.arn,
-      aws_sns_topic.nems_audit.arn,
-      aws_sns_topic.re_registrations_topic.arn,
-    ]
+    actions = ["sns:GetTopicAttributes"]
+    resources = local.sns_topic_arns
+  }
+
+  statement {
+    actions   = ["sns:Publish"]
+    effect    = "Deny"
+    resources = local.sns_topic_arns
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
   }
 }
 
