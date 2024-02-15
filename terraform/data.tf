@@ -217,8 +217,23 @@ data "aws_iam_policy_document" "sns_cross_account_permissions_policy_doc" {
       type        = "AWS"
     }
 
-    resources = [
-      aws_sns_topic.re_registrations_topic.arn
+    resources = [aws_sns_topic.re_registrations_topic.arn]
+  }
+
+  statement {
+    effect = "Deny"
+
+    actions = [
+      "sns:Subscribe"
     ]
+
+    resources = [aws_sns_topic.re_registrations_topic.arn]
+
+    condition {
+      test     = "aws:SecureTransport"
+      variable = "Bool"
+
+      values = [false]
+    }
   }
 }
