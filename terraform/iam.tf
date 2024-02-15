@@ -83,7 +83,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
-    resources = [local.sns_topic_arns]
+    resources = local.sns_topic_arns
   }
 }
 
