@@ -221,7 +221,7 @@ data "aws_iam_policy_document" "sns_cross_account_permissions_policy_doc" {
   }
 
   statement {
-    effect    = "Deny"
+    effect = "Deny"
 
     actions = [
       "sns:Subscribe"
