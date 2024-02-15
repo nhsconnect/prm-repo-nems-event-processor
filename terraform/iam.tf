@@ -22,7 +22,7 @@ resource "aws_iam_role" "component-ecs-role" {
 
   tags = {
     Environment = var.environment
-    CreatedBy = var.repo_name
+    CreatedBy   = var.repo_name
   }
 }
 
@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
 
     resources = [
       "*"
-#      "arn:aws:cloudwatch:${var.region}:${local.account_id}:metric-stream/NemsEventProcessor:*"
+      #      "arn:aws:cloudwatch:${var.region}:${local.account_id}:metric-stream/NemsEventProcessor:*"
     ]
   }
 }
@@ -83,7 +83,10 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
-    resources = local.sns_topic_arns
+    resources = concat(
+      local.sns_topic_arns,
+      [aws_sns_topic.re_registrations_topic.arn]
+    )
   }
 }
 
