@@ -70,6 +70,10 @@ resource "aws_sns_topic" "re_registrations_topic" {
 resource "aws_sns_topic_policy" "sns_cross_account_permissions_policy" {
   arn    = aws_sns_topic.re_registrations_topic.arn
   policy = data.aws_iam_policy_document.sns_cross_account_permissions_policy_doc.json
+
+  depends_on = [
+    data.aws_iam_policy_document.sns_cross_account_permissions_policy_doc
+  ]
 }
 
 resource "aws_sns_topic_policy" "deny_http" {
