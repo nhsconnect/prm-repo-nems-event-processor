@@ -219,21 +219,4 @@ data "aws_iam_policy_document" "sns_cross_account_permissions_policy_doc" {
 
     resources = [aws_sns_topic.re_registrations_topic.arn]
   }
-
-  statement {
-    effect = "Deny"
-
-    actions = [
-      "sns:Subscribe"
-    ]
-
-    resources = [aws_sns_topic.re_registrations_topic.arn]
-
-    condition {
-      test     = "StringEquals"
-      variable = "sns:Protocol"
-
-      values = ["http"]
-    }
-  }
 }
