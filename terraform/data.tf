@@ -230,10 +230,10 @@ data "aws_iam_policy_document" "sns_cross_account_permissions_policy_doc" {
     resources = [aws_sns_topic.re_registrations_topic.arn]
 
     condition {
-      test     = "aws:SecureTransport"
-      variable = "Bool"
+      test     = "StringEquals"
+      variable = "sns:Protocol"
 
-      values = [false]
+      values = ["http"]
     }
   }
 }
