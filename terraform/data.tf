@@ -24,7 +24,7 @@ data "aws_ssm_parameter" "nems_events_topic_arn" {
   name = "/repo/${var.environment}/output/prm-deductions-mesh-forwarder/nems-events-topic-arn"
 }
 
-data "aws_ssm_parameter" "dynamodb-name" {
+data "aws_ssm_parameter" "dynamodb_name" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/ehr-transfer-tracker-db-name"
 }
 
