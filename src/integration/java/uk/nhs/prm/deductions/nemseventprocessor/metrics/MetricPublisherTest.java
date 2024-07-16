@@ -41,6 +41,9 @@ class MetricPublisherTest {
 
     @Test
     void shouldPutHealthMetricDataIntoCloudWatch() {
+        // TODO investigate why this test intermittently fails
+        System.out.println("If this test fails on the pipeline, rerun it. It fails intermittently.");
+
         publisher.publishMetric("Health", HEALTHY_HEALTH_VALUE);
 
         List<Metric> metrics = fetchMetricsMatching("NemsEventProcessor", "Health");
