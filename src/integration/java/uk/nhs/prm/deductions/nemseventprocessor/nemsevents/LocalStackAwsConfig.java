@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Slf4j
 @TestConfiguration
 public class LocalStackAwsConfig {
 
@@ -42,7 +42,7 @@ public class LocalStackAwsConfig {
     @Bean
     @Primary
     public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) {
-        System.err.println("!!!! localstack config sqsClient creation");
+        log.info("localstack config sqsClient creation");
         return SqsClient.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("FAKE", "FAKE")))
                 .region(Region.EU_WEST_2)
